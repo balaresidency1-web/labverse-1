@@ -290,9 +290,9 @@ BEGIN
     AND (manual_pdf_url IS NULL OR manual_pdf_url LIKE 'data:%');
 
   UPDATE public.experiments
-  SET manual_pdf_url = 'https://iitr.ac.in/Academics/static/Department/Physics/Microcontroller%20Lab/ADC.pdf',
-      manual_pdf_name = 'IIT_Roorkee_Microcontroller_ADC_Interfacing_Manual.pdf',
-      manual_doc_name = 'ADC Sensor Interfacing – IIT Roorkee reference manual',
+  SET manual_pdf_url = 'https://iitr.ac.in/Academics/static/Department/Physics/Microprocessor%20Laboratory/ADC_INTERFACING.pdf',
+      manual_pdf_name = 'IIT_Roorkee_ADC_0809_Interfacing_Module_User_Manual.pdf',
+      manual_doc_name = 'ADC Sensor Interfacing – ADC 0809 module user manual (listed by IIT Roorkee)',
       last_verified_at = now(),
       updated_at = now()
   WHERE subject_id = v_subj_ece401 AND exp_number = 2
@@ -326,8 +326,8 @@ BEGIN
        'IIT Roorkee – Analog Electronics Teaching Laboratory',
        'https://iitr.ac.in/Departments/Physics%20Department/Academics/Teaching%20Laboratories.html'),
       (v_subj_ece401, 2, 'ADC Sensor Interfacing & Serial Telemetry Acquisition',
-       'https://iitr.ac.in/Academics/static/Department/Physics/Microcontroller%20Lab/ADC.pdf',
-       'IIT Roorkee – Microcontroller Laboratory',
+       'https://iitr.ac.in/Academics/static/Department/Physics/Microprocessor%20Laboratory/ADC_INTERFACING.pdf',
+       'Listed in IIT Roorkee Microcontroller Laboratory; document publisher: Excel Technologies',
        'https://iitr.ac.in/Departments/Physics%20Department/Academics/Teaching%20Laboratories.html')
   ) AS ref(subject_id, exp_number, title, pdf_url, source_name, source_page)
   JOIN public.experiments e
