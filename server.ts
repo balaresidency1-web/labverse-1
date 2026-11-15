@@ -94,18 +94,11 @@ app.get('/api/admin/migration-sql', async (req, res) => {
     const migrationsDir = path.join(__dirname, 'supabase', 'migrations');
     let combinedSql = '';
 
-    const files = [
-      '20261111_init_labverse.sql',
-      '20261112_multi_lab_and_tenant_expansion.sql',
-      '20261112_security_repair_and_production_auth.sql',
-      '20261113_mvit_single_college_simplification.sql',
-      '20261114_mvit_production_security_hardening.sql',
-      '20261115_pc_lab_and_course_learning_workflow.sql',
-      '20261116_pc_lab_rls_integrity_and_psl_dedup.sql',
-      '20261117_curated_resource_registry_and_validation.sql',
-      '20261118_hide_pc_lab_public_and_restrict_admin_pc_records.sql',
-      '20261119_tighten_storage_and_manual_rls.sql',
-    ];
+    // Include every chronologically ordered SQL migration so the admin SQL export
+    // cannot silently omit newer security or schema migrations.
+    const files = fs.readdirSync(migrationsDir)
+      .filter((name: string) => /^\d{8}_[a-z0-9_-]+\.sql$/i.test(name))
+      .sort((a: string, b: string) => a.localeCompare(b));
 
     for (const f of files) {
       const filePath = path.join(migrationsDir, f);

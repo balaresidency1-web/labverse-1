@@ -44,7 +44,8 @@ Configure environment variables in `.env.local` (never commit real secrets):
 
 ```env
 VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
-VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+# The app keeps this compatibility variable name; set its value to the sb_publishable_ key.
+VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY
 APP_URL=http://localhost:3000
 
 # Server-side only (never expose to browser or VITE_* variables)
@@ -52,23 +53,31 @@ SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY
 ```
 
 ### Applying Supabase Migrations & Demo Seed (In Order)
-Run the SQL files inside `supabase/migrations/` in chronological order in the Supabase SQL Editor (or via Supabase CLI):
 
-1. `supabase/migrations/20261111_create_labverse_schema.sql`
+Run **all SQL migrations in this exact chronological order**, then run `supabase/seed_demo.sql` once. The seed is idempotent and now creates the four core labs before attaching demo subjects and course mappings.
+
+1. `supabase/migrations/20261111_init_labverse.sql`
 2. `supabase/migrations/20261112_multi_lab_and_tenant_expansion.sql`
-3. `supabase/migrations/20261113_single_institution_mvit.sql`
-4. `supabase/migrations/20261114_fix_mvit_rls_and_storage.sql`
-5. `supabase/migrations/20261115_year_wise_and_lab_resources.sql`
-6. `supabase/migrations/20261116_pc_lab_rls_integrity_and_psl_dedup.sql`
-7. `supabase/migrations/20261117_hide_pc_lab_public_and_restrict_admin_pcs.sql`
-8. `supabase/migrations/20261118_resource_verification_and_rls_hardening.sql`
-9. `supabase/migrations/20261119_tighten_storage_and_manual_rls.sql`
-10. *(Optional for demo)* `supabase/seed_demo.sql` — idempotent Years 1–4 demo content + PC Lab sample fleet.
+3. `supabase/migrations/20261112_security_repair_and_production_auth.sql`
+4. `supabase/migrations/20261113_mvit_single_college_simplification.sql`
+5. `supabase/migrations/20261114_mvit_production_security_hardening.sql`
+6. `supabase/migrations/20261115_pc_lab_and_course_learning_workflow.sql`
+7. `supabase/migrations/20261116_pc_lab_rls_integrity_and_psl_dedup.sql`
+8. `supabase/migrations/20261117_curated_resource_registry_and_validation.sql`
+9. `supabase/migrations/20261118_hide_pc_lab_public_and_restrict_admin_pc_records.sql`
+10. `supabase/migrations/20261119_tighten_storage_and_manual_rls.sql`
+11. `supabase/migrations/20261120_backend_access_hardening.sql`
+12. `supabase/migrations/20261121_revoke_default_data_api_grants.sql`
+13. `supabase/migrations/20261122_invoker_public_read_helpers.sql`
+14. `supabase/seed_demo.sql` — illustrative Years 1–4 content, four labs, course mappings, and clearly labelled sample PC Lab fleet.
 
-> **Security Highlights (`20261117`–`20261119`):**
-> - The `manuals` Supabase Storage bucket is **private** (`public = false`) and serves authorized documents via short-lived signed URLs refreshed from persistent `storage_path`.
-> - Row-Level Security blocks public/anonymous users from `pc_lab` / non-public labs, blocks `college_admin` from reading or modifying individual PC computer inventory, maintenance logs, or PC Lab manuals/storage objects, and restricts Lab Assistants strictly to their assigned laboratories.
-> - PDF Previews convert validated `%PDF-` streams (`idb://`, `data:`, Supabase private storage downloads, and CORS-permitted HTTP URLs) into temporary revocable `Blob` URLs inside Chrome/Edge, with explicit loading, retry, missing-file, access-denied, and CORS external fallback (`Open PDF in New Tab` / `Download PDF`) states.
+> **Security Highlights (`20261118`–`20261122`):**
+> - The `manuals` Storage bucket is **private**; documents are served through authorized access to stored objects.
+> - Anonymous users receive read-only access to public learning tables. Management writes require authentication and are filtered by row-level policies.
+> - PC Lab remains in the database but is hidden from the public portal. Only its assigned Lab Assistant can access individual PC inventory and maintenance records; College Admin cannot inspect those machine records.
+> - Deprecated student progress tables remain inaccessible to anonymous and authenticated clients.
+> - New public-schema tables/functions are not automatically exposed to app roles; migrations must explicitly grant only the intended access.
+> - Demo seed records are illustrative. No real PDF manuals are included; staff must upload experiment-specific manuals to the private `manuals` bucket.
 
 ---
 
