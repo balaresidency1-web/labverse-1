@@ -104,10 +104,11 @@ export const ExperimentDetailView: React.FC<ExperimentDetailViewProps> = ({
     : experiment.manual_pdf_url
       ? Boolean(experiment.is_demo) && experiment.manual_pdf_url.startsWith('data:')
       : !isSupabaseActive;
+  const externalManualUrl = experiment.manual_pdf_url || '';
   const isExternalManual = Boolean(
     !linkedDoc &&
-    /^https?:\\/\\//i.test(experiment.manual_pdf_url || '') &&
-    !/\\/storage\\/v1\\/object\\//i.test(experiment.manual_pdf_url || '')
+    (externalManualUrl.startsWith('https://') || externalManualUrl.startsWith('http://')) &&
+    !externalManualUrl.includes('/storage/v1/object/')
   );
 
   const yearDisplay =
