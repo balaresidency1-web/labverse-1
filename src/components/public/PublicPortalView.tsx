@@ -1681,10 +1681,11 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                         const isDemoExpManual = linkedDoc
                           ? Boolean(linkedDoc.is_demo)
                           : Boolean(exp.is_demo || !isSupabaseActive);
+                        const externalManualUrl = exp.manual_pdf_url || '';
                         const isExternalExpManual = Boolean(
                           !linkedDoc &&
-                          /^https?:\\/\\//i.test(exp.manual_pdf_url || '') &&
-                          !/\\/storage\\/v1\\/object\\//i.test(exp.manual_pdf_url || '')
+                          (externalManualUrl.startsWith('https://') || externalManualUrl.startsWith('http://')) &&
+                          !externalManualUrl.includes('/storage/v1/object/')
                         );
 
                         return (
