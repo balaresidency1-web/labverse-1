@@ -75,3 +75,25 @@ Before a live presentation, verify the public learning journey, each staff role,
 ## Demo-data notice
 
 Sample curriculum, experiments, inventory, and other seeded records are illustrative unless independently verified against the institution's approved documents. Do not present sample records as official course material.
+
+
+## UX & Animation practical track
+
+The public **Digital Design & Interaction Lab (UXL-01)** includes one progressive practical for each academic year, mapped to CSE and IT:
+
+| Year / semester | Subject | Practical |
+|---|---|---|
+| Year 1 / Sem 2 | UXA-101L — Visual Motion & Animation Fundamentals | Create a bouncing-ball motion study |
+| Year 2 / Sem 4 | UXA-201L — HCI & Interface Usability | Measure touch-target and menu usability |
+| Year 3 / Sem 6 | UXA-301L — Motion Feedback & Interaction Evaluation | Evaluate feedback timing and perceived responsiveness |
+| Year 4 / Sem 8 | UXA-401L — Integrated UX & Motion Design Capstone | Build and evaluate an integrated UX/motion prototype |
+
+The original [LABVERSE UX & Animation Practical Manual](https://xppklywqcffewljoswog.supabase.co/functions/v1/labverse-ux-manual) covers the 20 supplied principles, procedures, observation sheets, assessment suggestions, and accessibility / privacy notes. The endpoint generates a PDF on request.
+
+Supplementary learning references:
+- [D'Source / IDC, IIT Bombay — Principles of Animation: The 12 Fundamentals (PDF)](https://www.dsource.in/sites/default/files/course/principles-animation/downloads/file/Course-Principles-animation_new_version_Final.pdf)
+- [D'Source animation course](https://www.dsource.in/course/principles-animation)
+- [IIT Guwahati Virtual Labs — HCI experiment index](https://hci-iitg.vlabs.ac.in/introduction_expt.html)
+- [IIT Guwahati Virtual Labs — Fitts's Law experiment](https://hci-iitg.vlabs.ac.in/Fitts.html)
+
+The D'Source PDF is the external animation reference; it is not the LABVERSE manual. The LABVERSE practical handout is original illustrative content and is not an official university syllabus or IIT publication. Seeded subject and experiment records remain illustrative until validated by the institution.
