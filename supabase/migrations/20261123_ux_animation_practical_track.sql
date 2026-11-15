@@ -12,7 +12,8 @@ DECLARE
   v_experiment_id uuid;
   v_row record;
   v_course_code text;
-  v_manual_url text := 'https://www.dsource.in/sites/default/files/course/principles-animation/downloads/file/Course-Principles-animation_new_version_Final.pdf';
+  v_manual_url text := 'https://xppklywqcffewljoswog.supabase.co/functions/v1/labverse-ux-manual';
+  v_external_reference_url text := 'https://www.dsource.in/sites/default/files/course/principles-animation/downloads/file/Course-Principles-animation_new_version_Final.pdf';
 BEGIN
   SELECT id INTO v_institution_id
   FROM public.institutions
@@ -237,9 +238,9 @@ BEGIN
       )
       VALUES (
         v_institution_id, v_experiment_id, 'manual_pdf',
-        'Principles of Animation — D''Source / IDC IIT Bombay',
+        'LABVERSE UX & Animation Practical Manual',
         v_manual_url,
-        jsonb_build_object('note', 'External downloadable reference PDF. It covers the traditional 12 animation principles; the full LABVERSE 20-principle track is an original practical handout.'),
+        jsonb_build_object('note', 'Original LABVERSE companion manual covering the user-supplied 20 principles and all four year-wise experiments.'),
         true
       );
     END IF;
@@ -259,5 +260,21 @@ BEGIN
         true
       );
     END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM public.experiment_resources
+      WHERE experiment_id = v_experiment_id AND resource_type = 'manual_pdf' AND url = v_external_reference_url
+    ) THEN
+      INSERT INTO public.experiment_resources (
+        institution_id, experiment_id, resource_type, title, url, metadata, is_published
+      )
+      VALUES (
+        v_institution_id, v_experiment_id, 'manual_pdf',
+        'D''Source / IDC, IIT Bombay - Principles of Animation reference PDF',
+        v_external_reference_url,
+        jsonb_build_object('note', 'Supplementary source for the traditional 12 animation principles; the full 20-principle practical is the original LABVERSE companion manual.'),
+        true
+      );
+    END IF;
   END LOOP;
-END $$;
+END $;
