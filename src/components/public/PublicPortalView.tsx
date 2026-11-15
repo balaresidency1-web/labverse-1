@@ -1681,6 +1681,12 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                         const isDemoExpManual = linkedDoc
                           ? Boolean(linkedDoc.is_demo)
                           : Boolean(exp.is_demo || !isSupabaseActive);
+                        const externalManualUrl = exp.manual_pdf_url || '';
+                        const isExternalExpManual = Boolean(
+                          !linkedDoc &&
+                          (externalManualUrl.startsWith('https://') || externalManualUrl.startsWith('http://')) &&
+                          !externalManualUrl.includes('/storage/v1/object/')
+                        );
 
                         return (
                           <div
@@ -1707,7 +1713,7 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                                           : 'bg-[#FAF6F0] text-[#49372E] border-[#E7DDD0]'
                                       }`}
                                     >
-                                      {isDemoExpManual ? 'Demo Manual PDF' : 'Uploaded Manual PDF'}
+                                      {isDemoExpManual ? 'Demo Manual PDF' : isExternalExpManual ? 'External Reference PDF' : 'Uploaded Manual PDF'}
                                     </span>
                                   )}
                                   {hasVideo ? (
