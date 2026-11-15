@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { processAdminInviteRequest } from './src/utils/adminInviteHandler';
+import { processAdminInviteRequest } from './src/utils/adminInviteHandler.ts';
 
 dotenv.config();
 
