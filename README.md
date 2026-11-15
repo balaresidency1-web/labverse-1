@@ -106,6 +106,6 @@ The D'Source PDF is the external animation reference; it is not the LABVERSE man
 | Year 1 | Simple pendulum – acceleration due to gravity | [SCCE Kinematics and Dynamics Lab Manual (PDF)](https://scce.ac.in/noticeboard/10969_21122017SIMPLE_PENDULUM.pdf) |
 | Year 2 | PN-junction diode forward-bias characteristics | [MITS Electronic Devices and Circuits Lab Manual (PDF)](https://mits.ac.in/assets/pdf/ece/EED%20Lab%20Manual.pdf) |
 | Year 3 | BJT common-emitter input/output characteristics | [IIT Roorkee BJT Characteristics (PDF)](https://iitr.ac.in/Academics/static/Department/Physics/Analog%20Electronics/BJT_Characteristics.pdf) |
-| Year 4 | ADC sensor interfacing and serial telemetry | [IIT Roorkee Microcontroller Lab ADC Manual (PDF)](https://iitr.ac.in/Academics/static/Department/Physics/Microcontroller%20Lab/ADC.pdf) |
+| Year 4 | ADC sensor interfacing and serial telemetry | [ADC 0809 Interfacing Module User Manual (PDF)](https://iitr.ac.in/Academics/static/Department/Physics/Microprocessor%20Laboratory/ADC_INTERFACING.pdf) |
 
-These are third-party educational references hosted by their source institutions, not LABVERSE-authored manuals or institution-approved syllabus documents. Their presence guarantees a relevant reference resource for at least one mapped experiment in each year; it does not imply that every experiment has a manual.
+These are third-party educational references, not LABVERSE-authored manuals or institution-approved syllabus documents. The Year 4 ADC 0809 document is an Excel Technologies module user manual linked from IIT Roorkee's teaching-laboratory listing. Their presence guarantees a relevant reference resource for at least one mapped experiment in each year; it does not imply that every experiment has a manual.
