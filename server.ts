@@ -10,7 +10,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
+export const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
 app.use(express.json());
@@ -91,7 +91,7 @@ app.get('/api/admin/supabase-status', async (req, res) => {
 app.get('/api/admin/migration-sql', async (req, res) => {
   try {
     const fs = await import('fs');
-    const migrationsDir = path.join(__dirname, 'supabase', 'migrations');
+    const migrationsDir = path.join(process.cwd(), 'supabase', 'migrations');
     let combinedSql = '';
 
     // Include every chronologically ordered SQL migration so the admin SQL export
@@ -401,4 +401,8 @@ async function startServer() {
   });
 }
 
-startServer();
+// Vercel imports this module from its API Function. Do not start a persistent
+// HTTP listener in the serverless runtime; local development keeps the Express server.
+if (process.env.VERCEL !== '1') {
+  void startServer();
+}
