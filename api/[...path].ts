@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { app } from '../server';
+import { app } from '../server.ts';
 
 // Vercel routes /api/:path* here and puts the original suffix in query.path.
 // Restore the Express route before passing the request to the existing app.
