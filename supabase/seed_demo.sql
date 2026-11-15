@@ -77,6 +77,51 @@ BEGIN
   v_dept_ece := COALESCE(v_dept_ece, v_dept_sci);
   v_dept_cse := COALESCE(v_dept_cse, v_dept_sci);
 
+  -- 2b. Ensure core laboratories exist before demo subjects reference them.
+  INSERT INTO public.labs (
+    institution_id, department_id, lab_code, name, description,
+    building, room_number, location, capacity, status, lab_type, display_order
+  )
+  VALUES
+    (v_inst_id, v_dept_ece, 'EDL-01', 'Electronic Devices Lab',
+     'Analog semiconductor characterization, rectifier circuits, amplifier testing, and oscilloscope measurement laboratory.',
+     'ECE Block', 'Lab 104', 'Floor 1, East Wing', 40, 'active', 'practical', 1),
+    (v_inst_id, v_dept_sci, 'PCL-01', 'Professional Communication Lab',
+     'Digital language studio, phonetics practice, technical presentation, and group communication laboratory.',
+     'Academic Annex', 'Lab 302', 'Floor 3, North Wing', 36, 'active', 'practical', 3),
+    (v_inst_id, v_dept_cse, 'COMP-PC-01', 'PC Lab',
+     'Centralized computing workstations and internal staff workstation infrastructure management.',
+     'CSE & IT Block', 'Center 401', 'Floor 4, Central Wing', 60, 'active', 'pc_lab', 4)
+  ON CONFLICT (institution_id, lab_code) DO NOTHING;
+
+  SELECT id INTO v_lab_psl
+  FROM public.labs
+  WHERE institution_id = v_inst_id
+    AND (UPPER(lab_code) IN ('PHYS-SCI-01', 'PSL-01') OR LOWER(TRIM(name)) = 'physical science lab')
+  ORDER BY CASE WHEN UPPER(lab_code) = 'PHYS-SCI-01' THEN 0 ELSE 1 END, created_at ASC
+  LIMIT 1;
+
+  IF v_lab_psl IS NULL THEN
+    INSERT INTO public.labs (
+      institution_id, department_id, lab_code, name, description,
+      building, room_number, location, capacity, status, lab_type, display_order
+    )
+    VALUES (
+      v_inst_id, v_dept_sci, 'PHYS-SCI-01', 'Physical Science Lab',
+      'Integrated engineering physics, precision vernier metrology, optical bench, and analytical chemistry laboratory.',
+      'Main Academic Block', 'Lab 201', 'Floor 2, South Wing', 45, 'active', 'practical', 2
+    )
+    RETURNING id INTO v_lab_psl;
+  END IF;
+
+  UPDATE public.labs
+  SET lab_type = 'pc_lab', is_public = false
+  WHERE institution_id = v_inst_id AND UPPER(lab_code) = 'COMP-PC-01';
+
+  SELECT id INTO v_lab_edl FROM public.labs WHERE institution_id = v_inst_id AND UPPER(lab_code) = 'EDL-01' LIMIT 1;
+  SELECT id INTO v_lab_pcl FROM public.labs WHERE institution_id = v_inst_id AND UPPER(lab_code) = 'PCL-01' LIMIT 1;
+  SELECT id INTO v_lab_pc FROM public.labs WHERE institution_id = v_inst_id AND UPPER(lab_code) = 'COMP-PC-01' LIMIT 1;
+
   -- 3. Resolve or seed active Academic Term
   SELECT id INTO v_term_id FROM public.academic_terms WHERE institution_id = v_inst_id AND is_current = true LIMIT 1;
   IF v_term_id IS NULL THEN
@@ -102,20 +147,21 @@ BEGIN
   SELECT id INTO v_course_it FROM public.courses WHERE institution_id = v_inst_id AND code = 'IT' LIMIT 1;
   SELECT id INTO v_course_mech FROM public.courses WHERE institution_id = v_inst_id AND code = 'MECH' LIMIT 1;
 
-  -- 5. Resolve existing 4 MVIT Laboratories without duplicating Physical Science Lab
-  SELECT id INTO v_lab_edl FROM public.labs WHERE institution_id = v_inst_id AND UPPER(lab_code) = 'EDL-01' LIMIT 1;
-  SELECT id INTO v_lab_pcl FROM public.labs WHERE institution_id = v_inst_id AND UPPER(lab_code) = 'PCL-01' LIMIT 1;
-  SELECT id INTO v_lab_pc FROM public.labs WHERE institution_id = v_inst_id AND UPPER(lab_code) = 'COMP-PC-01' LIMIT 1;
-  SELECT id INTO v_lab_psl
-  FROM public.labs
-  WHERE institution_id = v_inst_id
-    AND (UPPER(lab_code) IN ('PHYS-SCI-01', 'PSL-01') OR LOWER(TRIM(name)) = 'physical science lab')
-  ORDER BY CASE WHEN UPPER(lab_code) = 'PHYS-SCI-01' THEN 0 ELSE 1 END, created_at ASC
-  LIMIT 1;
+  -- 4b. Map laboratories to illustrative courses.
+  INSERT INTO public.laboratory_courses (institution_id, lab_id, course_id)
+  SELECT v_inst_id, pair.lab_id, pair.course_id
+  FROM (VALUES
+    (v_lab_edl, v_course_ece), (v_lab_edl, v_course_eee),
+    (v_lab_psl, v_course_ece), (v_lab_psl, v_course_eee),
+    (v_lab_psl, v_course_cse), (v_lab_psl, v_course_it), (v_lab_psl, v_course_mech),
+    (v_lab_pcl, v_course_ece), (v_lab_pcl, v_course_cse),
+    (v_lab_pcl, v_course_it), (v_lab_pcl, v_course_mech),
+    (v_lab_pc, v_course_cse), (v_lab_pc, v_course_it), (v_lab_pc, v_course_ece)
+  ) AS pair(lab_id, course_id)
+  WHERE pair.lab_id IS NOT NULL AND pair.course_id IS NOT NULL
+  ON CONFLICT (lab_id, course_id) DO NOTHING;
 
-  IF v_lab_pc IS NOT NULL THEN
-    UPDATE public.labs SET is_public = false WHERE id = v_lab_pc;
-  END IF;
+  -- Labs were provisioned above before subjects are inserted.
 
   -- 6. Seed Years 1–4 Demo Practical Subjects (idempotent on institution_id + code)
   INSERT INTO public.practical_subjects (institution_id, lab_id, department_id, term_id, code, name, credits, semester, location, schedule_info, description, is_active)
@@ -132,6 +178,18 @@ BEGIN
     (v_inst_id, v_lab_edl, v_dept_ece, v_term_id, 'ECE-401L', 'Embedded Systems & Microcontroller Lab (Demo)', 2, 7, 'ECE Block, Lab 104', 'Tue & Thu Senior Batches', 'DEMO CONTENT: Year 4 microcontroller GPIO interfacing and sensor data acquisition.', true),
     (v_inst_id, v_lab_edl, v_dept_ece, v_term_id, 'ECE-402L', 'Communication & IoT Systems Lab (Demo)', 2, 8, 'ECE Block, Lab 104', 'Wed & Fri Senior Batches', 'DEMO CONTENT: Year 4 wireless telemetry and IoT edge device integration.', true)
   ON CONFLICT (institution_id, code) DO NOTHING;
+
+  -- Repair previously seeded demo subjects that were inserted before their labs existed.
+  UPDATE public.practical_subjects ps
+  SET lab_id = CASE
+    WHEN ps.code IN ('PHY-101L', 'CHM-101L') THEN v_lab_psl
+    WHEN ps.code IN ('EEE-101L', 'ECE-201L', 'ECE-202L', 'ECE-301L', 'ECE-302L', 'ECE-401L', 'ECE-402L') THEN v_lab_edl
+    WHEN ps.code IN ('HSS-101L', 'HSS-301L') THEN v_lab_pcl
+    ELSE ps.lab_id
+  END
+  WHERE ps.institution_id = v_inst_id
+    AND ps.lab_id IS NULL
+    AND ps.code IN ('PHY-101L', 'CHM-101L', 'EEE-101L', 'ECE-201L', 'ECE-202L', 'ECE-301L', 'ECE-302L', 'ECE-401L', 'ECE-402L', 'HSS-101L', 'HSS-301L');
 
   SELECT id INTO v_subj_phy101 FROM public.practical_subjects WHERE institution_id = v_inst_id AND code = 'PHY-101L' LIMIT 1;
   SELECT id INTO v_subj_chm101 FROM public.practical_subjects WHERE institution_id = v_inst_id AND code = 'CHM-101L' LIMIT 1;
