@@ -68,9 +68,10 @@ Run **all SQL migrations in this exact chronological order**, then run `supabase
 10. `supabase/migrations/20261119_tighten_storage_and_manual_rls.sql`
 11. `supabase/migrations/20261120_backend_access_hardening.sql`
 12. `supabase/migrations/20261121_revoke_default_data_api_grants.sql`
-13. `supabase/seed_demo.sql` — illustrative Years 1–4 content, four labs, course mappings, and clearly labelled sample PC Lab fleet.
+13. `supabase/migrations/20261122_invoker_public_read_helpers.sql`
+14. `supabase/seed_demo.sql` — illustrative Years 1–4 content, four labs, course mappings, and clearly labelled sample PC Lab fleet.
 
-> **Security Highlights (`20261118`–`20261121`):**
+> **Security Highlights (`20261118`–`20261122`):**
 > - The `manuals` Storage bucket is **private**; documents are served through authorized access to stored objects.
 > - Anonymous users receive read-only access to public learning tables. Management writes require authentication and are filtered by row-level policies.
 > - PC Lab remains in the database but is hidden from the public portal. Only its assigned Lab Assistant can access individual PC inventory and maintenance records; College Admin cannot inspect those machine records.
