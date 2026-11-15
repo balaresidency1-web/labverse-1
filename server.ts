@@ -97,7 +97,7 @@ app.get('/api/admin/migration-sql', async (req, res) => {
     // Include every chronologically ordered SQL migration so the admin SQL export
     // cannot silently omit newer security or schema migrations.
     const files = fs.readdirSync(migrationsDir)
-      .filter((name: string) => /^\\d{8}_[a-z0-9_-]+\\.sql$/i.test(name))
+      .filter((name: string) => /^\d{8}_[a-z0-9_-]+\.sql$/i.test(name))
       .sort((a: string, b: string) => a.localeCompare(b));
 
     for (const f of files) {
