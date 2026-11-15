@@ -185,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="hidden md:flex items-center justify-between px-2 pt-1 pb-2 border-b border-[#F5F0E8]">
             {!isCollapsed && (
               <span className="text-[10px] font-mono uppercase font-bold text-[#6E675F] tracking-wider">
-                {currentRole === 'college_admin' ? 'MVIT Admin Portal' : 'Lab Assistant Desk'}
+                {currentRole === 'college_admin' ? 'College Admin Portal' : 'Lab Assistant Desk'}
               </span>
             )}
             <button

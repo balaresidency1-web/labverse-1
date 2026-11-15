@@ -72,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onSignOut })
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-[#E7DDD0] shadow-[0_1px_2px_0_rgba(37,37,33,0.03)]">
       <div className="max-w-[1600px] mx-auto px-3 sm:px-6 h-15 flex items-center justify-between gap-2 sm:gap-3">
-        {/* Left: Mobile trigger & MVIT Brand */}
+        {/* Left: Mobile trigger & LABVERSE Brand */}
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
@@ -89,7 +89,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onSignOut })
             </div>
             <div className="whitespace-nowrap">
               <span className="font-heading font-bold text-sm sm:text-base text-[#252521] tracking-tight">
-                LABVERSE – MVIT
+                LABVERSE
               </span>
               <span className="text-[11px] text-[#6E675F] hidden xl:inline ml-2">
                 {institution.code} Staff Portal
@@ -107,7 +107,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onSignOut })
           )}
           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#FAF6F0] border border-[#E7DDD0] rounded-lg shrink-0 whitespace-nowrap">
             <Building2 className="w-3.5 h-3.5 text-[#A66A43] shrink-0" />
-            <span className="font-semibold text-[#252521]">MVIT Puducherry</span>
+            <span className="font-semibold text-[#252521]">Institution Workspace</span>
             <span className="text-[#D8CBB9]">•</span>
             <span className="font-mono text-[#6E675F] text-[10px]">{currentTerm.code}</span>
           </div>

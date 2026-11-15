@@ -2,102 +2,76 @@
 
 **Learn. Explore. Experiment.**
 
-LABVERSE is a single-institution smart laboratory learning and operations platform built for **Manakula Vinayagar Institute of Technology (MVIT), Puducherry**. It combines an open-access student learning portal with strictly scoped staff management tools, interactive simulators, lab equipment QR workflows, and private laboratory manual storage.
+LABVERSE is a single-institution laboratory learning and operations platform. It brings together an open-access practical-learning portal and role-scoped laboratory administration, with experiment resources, virtual simulators, equipment QR workflows, and private manual storage.
 
----
+## Platform roles and access
 
-## Platform Roles & Access Model
+| Surface / role | Authentication | Responsibilities |
+|---|---|---|
+| **Public learning portal** | None | Browse public laboratories, courses, Years 1–4 practical subjects, syllabi, experiments, published manuals, video demonstrations, simulations, and public apparatus QR lookup. The internal PC Lab is hidden. |
+| **College Admin** | Required (`college_admin`) | Manage laboratories and staff assignments. Can see the PC Lab as an administrative assignment entry, but cannot inspect individual PC inventory, specifications, counts, maintenance records, or PC QR details. |
+| **Lab Assistant** | Required (`lab_assistant`) | Manage only assigned laboratories: subjects, syllabi, experiments, manuals, video/simulation resources, apparatus inventory, and QR tags. The assigned PC Lab Assistant can manage workstation and maintenance records. |
 
-| Surface / Role | Authentication | Scope & Responsibilities |
-| :--- | :--- | :--- |
-| **Public User Learning Portal** | **None (Open Access)** | Browse public labs, courses, Years 1–4 practical subjects, syllabi, experiments, validated PDF manuals, YouTube demonstrations, built-in/external simulations, and public apparatus QR lookup. **PC Lab is completely hidden.** |
-| **College Admin** | **Required (`college_admin`)** | Manage institution-wide laboratories, create/assign Lab Assistants, oversee departments and courses. Sees PC Lab solely as an administrative lab entry for assistant assignment (individual PC inventory, specs, counts, maintenance, and PC QR details are hidden). |
-| **Lab Assistant** | **Required (`lab_assistant`)** | Assigned to specific MVIT laboratories. Full CRUD over subjects, syllabi, experiments, PDF manual uploads/publishing, YouTube/simulation resources, apparatus inventory, and QR tags. When assigned to PC Lab, manages student/staff PCs and maintenance tickets. |
+There is no Super Admin, Faculty login, Student login, student progress tracking, or submission-grading workflow.
 
-> **Important Scope Boundaries:** There is no Super Admin, Faculty login, or Student login, and there is no student progress tracking or submission grading workflow.
+## Public learning journey
 
----
+`Homepage` → `Start Learning` → `Laboratory Selection` → `Course Selection` → `Year Selection (1–4)` → `Practical Subjects` → `Syllabus` → `Experiments` → `Experiment Workspace`
 
-## Public Learning Workflow
+The experiment workspace provides the available manual, video demonstration, and virtual simulation resources.
 
-Every stage is independently navigable:
+## Built-in simulators
 
-`Homepage` → `Start Learning` → `Laboratory Selection` → `Course Selection` → `Academic Year Selection (Years 1–4)` → `Practical Subject Selection` → `Syllabus` → `Experiment Selection` → `Experiment Workspace (Manual PDF / YouTube / Virtual Simulation)`
+- Silicon PN Junction Diode Analyzer (`pn_junction`)
+- Simple Pendulum Oscillation Rig (`pendulum`)
+- Vernier Calipers Metrology Bench (`calipers`)
+- Electrometric Digital pH Meter (`ph_meter`)
 
-### Built-In Simulators
-1. **Silicon PN Junction Diode Analyzer** (`pn_junction`)
-2. **Simple Pendulum Oscillation Rig** (`pendulum`)
-3. **Vernier Calipers Metrology Bench** (`calipers`)
-4. **Electrometric Digital pH Meter** (`ph_meter`)
+## Demo mode and live backend
 
----
+### Demo mode
 
-## Demo Mode vs Live Supabase Mode
+When Supabase environment variables are not configured, the app uses illustrative demo data. Demo records must be treated as sample content, not official curriculum or institutional documents. Demo PDF uploads are stored in browser IndexedDB and should be tested in the same browser profile used for the presentation.
 
-### 1. Demo Mode (Default when Supabase env vars are unset)
-- Preloaded with illustrative Year 1–4 MVIT demo practicals across **Physical Science Lab (`PSL-01`)**, **Electronic Devices Lab (`EDL-01`)**, **Professional Communication Lab (`PCL-01`)**, and staff-only **PC Lab (`COMP-PC-01`)**.
-- All seeded illustrative content is clearly badged with **`DEMO – ILLUSTRATIVE CONTENT – NOT AN OFFICIAL COLLEGE DOCUMENT`**.
-- Uploaded PDFs in Demo Mode are persisted inside browser **IndexedDB** (`pdf_documents` store via `idb://` references) alongside app state in `localStorage` / IndexedDB, so uploaded manuals remain previewable and downloadable across page reloads.
+### Live Supabase mode
 
-### 2. Live Supabase Mode
-Configure environment variables in `.env.local` (never commit real secrets):
+Create a local `.env.local` file and configure:
 
 ```env
 VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
-# The app keeps this compatibility variable name; set its value to the sb_publishable_ key.
+# Compatibility variable name: use the Supabase sb_publishable_ key as the value.
 VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY
 APP_URL=http://localhost:3000
 
-# Server-side only (never expose to browser or VITE_* variables)
+# Server-side only. Never expose this value through VITE_* variables or commit it.
 SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY
 ```
 
-### Applying Supabase Migrations & Demo Seed (In Order)
+Do not commit credentials, service-role keys, real staff details, or private manuals to GitHub.
 
-Run **all SQL migrations in this exact chronological order**, then run `supabase/seed_demo.sql` once. The seed is idempotent and now creates the four core labs before attaching demo subjects and course mappings.
+### Database setup
 
-1. `supabase/migrations/20261111_init_labverse.sql`
-2. `supabase/migrations/20261112_multi_lab_and_tenant_expansion.sql`
-3. `supabase/migrations/20261112_security_repair_and_production_auth.sql`
-4. `supabase/migrations/20261113_mvit_single_college_simplification.sql`
-5. `supabase/migrations/20261114_mvit_production_security_hardening.sql`
-6. `supabase/migrations/20261115_pc_lab_and_course_learning_workflow.sql`
-7. `supabase/migrations/20261116_pc_lab_rls_integrity_and_psl_dedup.sql`
-8. `supabase/migrations/20261117_curated_resource_registry_and_validation.sql`
-9. `supabase/migrations/20261118_hide_pc_lab_public_and_restrict_admin_pc_records.sql`
-10. `supabase/migrations/20261119_tighten_storage_and_manual_rls.sql`
-11. `supabase/migrations/20261120_backend_access_hardening.sql`
-12. `supabase/migrations/20261121_revoke_default_data_api_grants.sql`
-13. `supabase/migrations/20261122_invoker_public_read_helpers.sql`
-14. `supabase/seed_demo.sql` — illustrative Years 1–4 content, four labs, course mappings, and clearly labelled sample PC Lab fleet.
+Apply the SQL migrations in `supabase/migrations/` in chronological order, then run `supabase/seed_demo.sql` if you want the illustrative starter dataset. The currently configured hosted backend has already had the migration set applied and demo data seeded. Do not reapply migrations blindly to an existing production database.
 
-> **Security Highlights (`20261118`–`20261122`):**
-> - The `manuals` Storage bucket is **private**; documents are served through authorized access to stored objects.
-> - Anonymous users receive read-only access to public learning tables. Management writes require authentication and are filtered by row-level policies.
-> - PC Lab remains in the database but is hidden from the public portal. Only its assigned Lab Assistant can access individual PC inventory and maintenance records; College Admin cannot inspect those machine records.
-> - Deprecated student progress tables remain inaccessible to anonymous and authenticated clients.
-> - New public-schema tables/functions are not automatically exposed to app roles; migrations must explicitly grant only the intended access.
-> - Demo seed records are illustrative. No real PDF manuals are included; staff must upload experiment-specific manuals to the private `manuals` bucket.
+The private `manuals` Storage bucket is intended for experiment-specific PDFs uploaded by authorized staff. No real manual PDFs are bundled in this repository; upload and verify the materials required for your demonstration.
 
----
-
-## Local Development & Verification Commands
+## Local development and release checks
 
 ```bash
-# Install dependencies
 npm install
-
-# Run all unit tests
 npm test
-
-# Type-check codebase
 npm run lint
-
-# Build production bundle
 npm run build
-
-# Start development / production server on port 3000
 npm run dev
 ```
 
-*(Note: When running locally in an offline/sandboxed environment without `SUPABASE_SERVICE_ROLE_KEY`, live Supabase admin user invitation endpoints require server-side configuration.)*
+- `npm run lint` runs the TypeScript compiler in no-emit mode.
+- `npm test` runs the utility and workflow test files.
+- `npm run build` creates the production Vite bundle.
+- `npm run dev` starts the Express/Vite development server.
+
+Before a live presentation, verify the public learning journey, each staff role, lab assignment boundaries, PC Lab privacy, QR scan/print, manual upload/preview/download, and simulator/video links in the actual deployment. Confirm that the deployment has the correct Supabase URL and publishable key and that server-side invitation features have their required server secret configured.
+
+## Demo-data notice
+
+Sample curriculum, experiments, inventory, and other seeded records are illustrative unless independently verified against the institution's approved documents. Do not present sample records as official course material.

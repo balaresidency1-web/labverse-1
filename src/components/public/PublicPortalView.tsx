@@ -184,7 +184,7 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
     };
   }, [institution.id, isSupabaseActive]);
 
-  // Publicly visible active MVIT laboratories (strictly excludes PC Lab & non-public labs)
+  // Publicly visible active laboratories (strictly excludes PC Lab & non-public labs)
   const visiblePublicLabs = useMemo(
     () => publicLabs.filter((l) => isPublicVisibleLab(l)),
     [publicLabs]
@@ -491,7 +491,7 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
           </div>
           <div className="whitespace-nowrap">
             <div className="font-heading font-bold text-base text-[#252521] tracking-tight leading-none">
-              LABVERSE – MVIT
+              LABVERSE
             </div>
             <div className="text-[11px] text-[#6E675F] mt-0.5 hidden sm:block">
               Smart Laboratory Learning and Management Platform
@@ -536,7 +536,7 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
             type="button"
             onClick={() => setIsScannerOpen(true)}
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#D8CBB9] bg-[#FAF6F0] hover:bg-[#E7DDD0] text-[#49372E] text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer"
-            title="Inspect MVIT Laboratory Apparatus via QR"
+            title="Inspect Laboratory Apparatus via QR"
           >
             <QrCode className="w-3.5 h-3.5 text-[#A66A43]" />
             <span>QR Lookup</span>
@@ -629,9 +629,9 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
       <footer className="bg-[#49372E] text-[#F5F0E8] border-t border-[#382922] mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
           <div className="space-y-2">
-            <div className="font-heading font-bold text-sm text-white">LABVERSE – MVIT</div>
+            <div className="font-heading font-bold text-sm text-white">LABVERSE</div>
             <p className="text-[#E7DDD0]/90 leading-relaxed">
-              Smart Laboratory Learning and Management Platform of Manakula Vinayagar Institute of Technology, Puducherry.
+              Smart Laboratory Learning and Management Platform of Laboratory Learning Support, Puducherry.
             </p>
             <p className="font-mono text-[11px] text-[#E7DDD0]/75">Learn. Explore. Experiment.</p>
           </div>
@@ -648,14 +648,14 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                 About LABVERSE
               </button>
               <button type="button" onClick={() => navigateTop('contact')} className="hover:text-white cursor-pointer">
-                Contact MVIT
+                Contact the laboratory administrator
               </button>
             </div>
           </div>
           <div className="space-y-1.5">
-            <div className="font-heading font-semibold text-white">Campus Address</div>
-            <p className="text-[#E7DDD0]/90">{institution.address}</p>
-            <p className="text-[#E7DDD0]/90 font-mono">{institution.contact_email || 'principal@mvit.edu.in'}</p>
+            <div className="font-heading font-semibold text-white">Platform Support</div>
+            <p className="text-[#E7DDD0]/90">Contact your institution's laboratory administrator for local support.</p>
+            <p className="text-[#E7DDD0]/90 font-mono">Contact your laboratory administrator for support.</p>
             <button
               type="button"
               onClick={onOpenAdminLogin}
@@ -721,11 +721,11 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                 <div className="lg:col-span-6 space-y-6">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#E7DDD0] text-[#49372E] text-xs font-semibold">
                     <Building2 className="w-3.5 h-3.5 text-[#A66A43]" />
-                    <span>Manakula Vinayagar Institute of Technology, Puducherry</span>
+                    <span>Laboratory Learning Support, Puducherry</span>
                   </div>
 
                   <h1 className="font-heading font-extrabold text-3xl sm:text-5xl text-[#252521] tracking-tight leading-tight">
-                    Virtual &amp; Practical Laboratory Learning at MVIT
+                    Virtual &amp; Practical Laboratory Learning
                   </h1>
 
                   <p className="text-sm sm:text-base text-[#49372E]/90 leading-relaxed max-w-xl">
@@ -755,7 +755,7 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                       <div className="font-mono font-bold text-xl text-[#49372E] tabular-nums">
                         {visiblePublicLabs.length}
                       </div>
-                      <div className="text-xs text-[#6E675F]">MVIT Laboratories</div>
+                      <div className="text-xs text-[#6E675F]">Laboratories</div>
                     </div>
                     <div>
                       <div className="font-mono font-bold text-xl text-[#49372E] tabular-nums">
@@ -776,7 +776,7 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                   <div className="relative rounded-2xl overflow-hidden border border-[#D8CBB9] shadow-lg bg-white">
                     <img
                       src={mvitLabHeroImg}
-                      alt="MVIT Digital Science & Electronics Laboratory"
+                      alt="Digital Science & Electronics Laboratory"
                       className="w-full h-72 sm:h-96 object-cover"
                     />
                     <div className="p-4 bg-white border-t border-[#E7DDD0] flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -842,13 +842,13 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
             <div className="text-center space-y-2 max-w-2xl mx-auto">
               <div className="inline-flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-[#A66A43]">
                 <FlaskConical className="w-3.5 h-3.5" />
-                <span>MVIT Learning Portal • Step 1 of 7</span>
+                <span>LABVERSE Learning Portal • Step 1 of 7</span>
               </div>
               <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-[#252521]">
                 Choose Your Laboratory
               </h1>
               <p className="text-xs sm:text-sm text-[#6E675F]">
-                Select an active Manakula Vinayagar Institute of Technology laboratory below to choose your course, academic year, practical subject, and experiments.
+                Select an active Laboratory Learning Support laboratory below to choose your course, academic year, practical subject, and experiments.
               </p>
             </div>
 
@@ -887,7 +887,7 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
               <div className="bg-white rounded-2xl border border-[#E7DDD0] p-12 text-center space-y-2 max-w-xl mx-auto">
                 <FlaskConical className="w-10 h-10 text-[#A66A43]/60 mx-auto" />
                 <h2 className="font-heading font-bold text-base text-[#252521]">
-                  Loading MVIT Laboratories...
+                  Loading Laboratories...
                 </h2>
                 <p className="text-xs text-[#6E675F]">
                   Preparing active practical and computing laboratories.
@@ -900,7 +900,7 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                   No active laboratories match your filter
                 </h2>
                 <p className="text-xs text-[#6E675F]">
-                  Clear your search query or select All Departments to view MVIT laboratories.
+                  Clear your search query or select All Departments to view laboratories.
                 </p>
               </div>
             ) : (
@@ -1184,7 +1184,7 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                     Select Your Course in {selectedLab.name}
                   </h2>
                   <p className="text-xs text-[#6E675F]">
-                    Only MVIT engineering courses explicitly mapped to {selectedLab.name} are shown below.
+                    Only available engineering courses explicitly mapped to {selectedLab.name} are shown below.
                   </p>
                 </div>
 
@@ -1195,7 +1195,7 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                       No Courses Configured for {selectedLab.name}
                     </h3>
                     <p className="text-xs text-[#6E675F]">
-                      MVIT College Administration has not mapped any active courses to this laboratory yet.
+                      College Administration has not mapped any active courses to this laboratory yet.
                     </p>
                   </div>
                 ) : (
@@ -1760,13 +1760,13 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
           <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
             <div className="bg-white rounded-2xl border border-[#E7DDD0] p-8 shadow-sm space-y-4">
               <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#A66A43]">
-                About LABVERSE – MVIT
+                About LABVERSE
               </span>
               <h1 className="font-heading font-bold text-3xl text-[#252521]">
                 Structured Digital &amp; Practical Laboratory Learning
               </h1>
               <p className="text-sm text-[#49372E]/90 leading-relaxed">
-                LABVERSE is built exclusively for Manakula Vinayagar Institute of Technology (MVIT), Puducherry. Learners follow a clean guided flow—starting from Laboratory selection, choosing their engineering course, inspecting subject syllabi, and launching experiment manuals, videos, and Bench Twin simulations.
+                LABVERSE provides a guided practical-learning journey: choose a laboratory, course, academic year, and subject, then explore experiment manuals, demonstrations, and virtual simulations. Learners follow a clean guided flow—starting from Laboratory selection, choosing their engineering course, inspecting subject syllabi, and launching experiment manuals, videos, and Bench Twin simulations.
               </p>
             </div>
 
@@ -1777,7 +1777,7 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                   Open Public Learning Portal
                 </h2>
                 <p className="text-xs text-[#49372E]/85 leading-relaxed">
-                  Visitors browse active MVIT laboratories, filter by course stream, preview syllabi and manuals, watch YouTube demonstrations, and run interactive simulations immediately—with zero login required.
+                  Visitors browse active laboratories, filter by course stream, preview syllabi and manuals, watch YouTube demonstrations, and run interactive simulations immediately—with zero login required.
                 </p>
               </div>
               <div className="bg-white rounded-2xl border border-[#E7DDD0] p-6 space-y-2">
@@ -1786,14 +1786,14 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                   Campus Laboratory Governance
                 </h2>
                 <p className="text-xs text-[#49372E]/85 leading-relaxed">
-                  MVIT College Administration manages laboratories, course mappings, and Lab Assistant assignments, while assigned assistants maintain manuals, equipment stock, PC Lab workstations, and QR tags.
+                  College Administration manages laboratories, course mappings, and Lab Assistant assignments, while assigned assistants maintain manuals, equipment stock, PC Lab workstations, and QR tags.
                 </p>
               </div>
             </div>
           </section>
         )}
 
-        {/* ==================== CONTACT MVIT ==================== */}
+        {/* ==================== CONTACT ==================== */}
         {activePage === 'contact' && (
           <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
             <div className="bg-white rounded-2xl border border-[#E7DDD0] p-8 shadow-sm space-y-6">
@@ -1802,7 +1802,7 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                   Campus Contact &amp; Laboratory Support
                 </span>
                 <h1 className="font-heading font-bold text-3xl text-[#252521] mt-1">
-                  Manakula Vinayagar Institute of Technology
+                  Laboratory Learning Support
                 </h1>
               </div>
 
@@ -1810,23 +1810,23 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                 <div className="p-4 rounded-xl bg-[#FAF6F0] border border-[#E7DDD0] space-y-1.5">
                   <MapPin className="w-5 h-5 text-[#A66A43]" />
                   <div className="font-heading font-bold text-sm text-[#252521]">Campus Location</div>
-                  <p className="text-[#49372E]/85 leading-relaxed">{institution.address}</p>
+                  <p className="text-[#49372E]/85 leading-relaxed">Contact your institution's laboratory administrator for local support.</p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-[#FAF6F0] border border-[#E7DDD0] space-y-1.5">
                   <Mail className="w-5 h-5 text-[#A66A43]" />
                   <div className="font-heading font-bold text-sm text-[#252521]">Institutional Email</div>
                   <p className="font-mono text-[#49372E]">
-                    {institution.contact_email || 'principal@mvit.edu.in'}
+                    Contact your laboratory administrator for support.
                   </p>
-                  <p className="text-[#6E675F]">Office of the Principal &amp; Lab Governance</p>
+                  <p className="text-[#6E675F]">Laboratory Administration</p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-[#FAF6F0] border border-[#E7DDD0] space-y-1.5">
                   <Phone className="w-5 h-5 text-[#A66A43]" />
                   <div className="font-heading font-bold text-sm text-[#252521]">Portal Administration</div>
                   <p className="text-[#49372E]/85">
-                    MVIT College Admins and Lab Assistants can sign in through Admin Login to manage labs, PC workstations, manuals, and QR labels.
+                    College Admins and Lab Assistants can sign in through Admin Login to manage labs, PC workstations, manuals, and QR labels.
                   </p>
                 </div>
               </div>

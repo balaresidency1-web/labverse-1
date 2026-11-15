@@ -18,10 +18,10 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
           </div>
           <div className="text-left">
             <span className="font-heading font-extrabold text-xl sm:text-2xl tracking-tight text-[#252521] block leading-none">
-              LABVERSE – MVIT
+              LABVERSE
             </span>
             <span className="text-[11px] font-medium text-[#A66A43]">
-              Manakula Vinayagar Institute of Technology, Puducherry
+              Smart Laboratory Learning & Management Platform
             </span>
           </div>
         </div>
@@ -35,7 +35,7 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
         <div className="max-w-md mx-auto space-y-1 text-xs text-[#5C534A]">
           <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-[#49372E]">
             <ShieldCheck className="w-3.5 h-3.5 text-[#A66A43]" />
-            <span>MVIT Authorized Staff Access • Learn. Explore. Experiment.</span>
+            <span>Authorized Staff Access • Learn. Explore. Experiment.</span>
           </div>
         </div>
       </footer>
