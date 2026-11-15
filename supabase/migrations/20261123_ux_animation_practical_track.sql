@@ -180,7 +180,7 @@ BEGIN
       'virtual_labs',
       'external',
       v_row.resource_note,
-      'verified',
+      'needs_review',
       now(),
       true
     )
