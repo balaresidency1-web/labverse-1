@@ -53,7 +53,7 @@ Do not commit credentials, service-role keys, real staff details, or private man
 
 Apply the SQL migrations in `supabase/migrations/` in chronological order, then run `supabase/seed_demo.sql` if you want the illustrative starter dataset. The currently configured hosted backend has already had the migration set applied and demo data seeded. Do not reapply migrations blindly to an existing production database.
 
-The private `manuals` Storage bucket is intended for experiment-specific PDFs uploaded by authorized staff. No real manual PDFs are bundled in this repository; upload and verify the materials required for your demonstration.
+The private `manuals` Storage bucket is intended for experiment-specific PDFs uploaded by authorized staff. Four experiments currently have external publisher-hosted reference PDFs linked in the live backend and demo seed—one per academic year. LABVERSE links to the original institution-hosted files instead of republishing documents without a confirmed redistribution licence. The source PDF may be a broader laboratory handout, so verify it against the approved local syllabus before treating it as an official course manual.
 
 ## Local development and release checks
 
@@ -97,3 +97,15 @@ Supplementary learning references:
 - [IIT Guwahati Virtual Labs — Fitts's Law experiment](https://hci-iitg.vlabs.ac.in/Fitts.html)
 
 The D'Source PDF is the external animation reference; it is not the LABVERSE manual. The LABVERSE practical handout is original illustrative content and is not an official university syllabus or IIT publication. Seeded subject and experiment records remain illustrative until validated by the institution.
+
+
+## Reference experiment manuals (one per year)
+
+| Academic year | Experiment | Publisher-hosted PDF |
+|---|---|---|
+| Year 1 | Simple pendulum – acceleration due to gravity | [SCCE Kinematics and Dynamics Lab Manual (PDF)](https://scce.ac.in/noticeboard/10969_21122017SIMPLE_PENDULUM.pdf) |
+| Year 2 | PN-junction diode forward-bias characteristics | [MITS Electronic Devices and Circuits Lab Manual (PDF)](https://mits.ac.in/assets/pdf/ece/EED%20Lab%20Manual.pdf) |
+| Year 3 | BJT common-emitter input/output characteristics | [IIT Roorkee BJT Characteristics (PDF)](https://iitr.ac.in/Academics/static/Department/Physics/Analog%20Electronics/BJT_Characteristics.pdf) |
+| Year 4 | ADC sensor interfacing and serial telemetry | [IIT Roorkee Microcontroller Lab ADC Manual (PDF)](https://iitr.ac.in/Academics/static/Department/Physics/Microcontroller%20Lab/ADC.pdf) |
+
+These are third-party educational references hosted by their source institutions, not LABVERSE-authored manuals or institution-approved syllabus documents. Their presence guarantees a relevant reference resource for at least one mapped experiment in each year; it does not imply that every experiment has a manual.
