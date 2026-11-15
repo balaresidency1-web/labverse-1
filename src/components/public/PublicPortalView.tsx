@@ -653,9 +653,9 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
             </div>
           </div>
           <div className="space-y-1.5">
-            <div className="font-heading font-semibold text-white">Campus Address</div>
-            <p className="text-[#E7DDD0]/90">{institution.address}</p>
-            <p className="text-[#E7DDD0]/90 font-mono">{institution.contact_email || 'principal@mvit.edu.in'}</p>
+            <div className="font-heading font-semibold text-white">Platform Support</div>
+            <p className="text-[#E7DDD0]/90">Contact your institution's laboratory administrator for local support.</p>
+            <p className="text-[#E7DDD0]/90 font-mono">Contact your laboratory administrator for support.</p>
             <button
               type="button"
               onClick={onOpenAdminLogin}
@@ -1810,16 +1810,16 @@ export const PublicPortalView: React.FC<PublicPortalViewProps> = ({ onOpenAdminL
                 <div className="p-4 rounded-xl bg-[#FAF6F0] border border-[#E7DDD0] space-y-1.5">
                   <MapPin className="w-5 h-5 text-[#A66A43]" />
                   <div className="font-heading font-bold text-sm text-[#252521]">Campus Location</div>
-                  <p className="text-[#49372E]/85 leading-relaxed">{institution.address}</p>
+                  <p className="text-[#49372E]/85 leading-relaxed">Contact your institution's laboratory administrator for local support.</p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-[#FAF6F0] border border-[#E7DDD0] space-y-1.5">
                   <Mail className="w-5 h-5 text-[#A66A43]" />
                   <div className="font-heading font-bold text-sm text-[#252521]">Institutional Email</div>
                   <p className="font-mono text-[#49372E]">
-                    {institution.contact_email || 'principal@mvit.edu.in'}
+                    Contact your laboratory administrator for support.
                   </p>
-                  <p className="text-[#6E675F]">Office of the Principal &amp; Lab Governance</p>
+                  <p className="text-[#6E675F]">Laboratory Administration</p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-[#FAF6F0] border border-[#E7DDD0] space-y-1.5">
