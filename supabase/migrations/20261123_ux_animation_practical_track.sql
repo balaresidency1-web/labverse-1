@@ -71,7 +71,7 @@ BEGIN
   FOR v_row IN
     SELECT *
     FROM (VALUES
-      ('UXA-101L', 'Visual Motion & Animation Fundamentals (Demo)', 2, 'Year 1: Motion Foundations',
+      ('UXA-101L', 'Visual Motion & Animation Fundamentals (Demo)', 2, 'Year 1: Motion Foundations', 'Create a bouncing-ball motion study',
        'Create and evaluate a short bouncing-ball animation that demonstrates squash and stretch, anticipation, staging, pose-to-pose planning, follow-through, easing, arcs, secondary action, timing, exaggeration, solid form, and appeal.',
        'The 12 traditional animation principles provide a vocabulary for readable motion. Key poses establish the action; in-between frames control timing. A ball accelerates under gravity, deforms at impact, and recovers while preserving a convincing sense of volume. This exercise treats the supplied 20-principle list as the track rubric; principles 13–20 are introduced as interface-design extensions.',
        '12 principles of animation bouncing ball tutorial',
@@ -81,7 +81,7 @@ BEGIN
        '[{"key":"keyframes","header":"Key poses","unit":"count"},{"key":"duration","header":"Animation duration","unit":"seconds"},{"key":"impact_frames","header":"Impact hold","unit":"frames"},{"key":"review_score","header":"Principles demonstrated","unit":"/12"}]',
        '[{"keyframes":"5","duration":"3.0","impact_frames":"2","review_score":"12"}]',
        'A short, readable bouncing-ball animation is produced. The learner explains at least six animation principles and identifies where all 12 craft principles appear in the timeline.'),
-      ('UXA-201L', 'Human-Computer Interaction & Interface Usability (Demo)', 4, 'Year 2: Touch Targets and Choice Architecture',
+      ('UXA-201L', 'Human-Computer Interaction & Interface Usability (Demo)', 4, 'Year 2: Touch Targets and Choice Architecture', 'Measure and improve touch-target and menu usability',
        'Measure how target size and menu choice count affect the speed and accuracy of selecting interface controls.',
        'Fitts''s Law models pointing time as a function of target distance and width. Hick-Hyman Law relates decision time to the number and uncertainty of choices. This practical also examines larger hit areas, cognitive load (Miller''s law as a design heuristic), familiar conventions (Jakob''s law), and repeated tasks.',
        'Fitts law Hick Hyman law interface usability experiment',
@@ -91,27 +91,27 @@ BEGIN
        '[{"key":"target_width","header":"Target width","unit":"pixels"},{"key":"distance","header":"Pointer distance","unit":"pixels"},{"key":"choices","header":"Menu choices","unit":"count"},{"key":"time","header":"Mean selection time","unit":"seconds"},{"key":"errors","header":"Selection errors","unit":"count"}]',
        '[{"target_width":"24","distance":"320","choices":"8","time":"1.42","errors":"3"},{"target_width":"48","distance":"320","choices":"8","time":"1.01","errors":"1"}]',
        'The learner submits a comparison of target sizes and menu structures with measured selection times, error rates, and a justified accessibility-oriented recommendation.'),
-      ('UXA-301L', 'Motion Feedback & Interaction Evaluation (Demo)', 6, 'Year 3: Feedback, Timing and Interaction Quality',
+      ('UXA-301L', 'Motion Feedback & Interaction Evaluation (Demo)', 6, 'Year 3: Feedback, Timing and Interaction Quality', 'Evaluate motion feedback and perceived responsiveness',
        'Build and evaluate interface micro-interactions that communicate loading, success, error, and state changes without delaying user work.',
        'Motion can stage attention, communicate cause and effect, and provide secondary feedback. Short and consistent response times support perceived responsiveness. The Doherty threshold is treated as a historical interaction-design guideline rather than a universal guarantee; actual task timing and participant perception must be measured. Postel''s law is considered for robust input handling, with clear validation and error recovery.',
        'UX microinteractions motion feedback usability evaluation',
-       'https://hci-iitg.vlabs.ac.in/umtel_proc.html',
+       'https://hci-iitg.vlabs.ac.in/introduction_expt.html',
        'HCI user testing reference for structured usability evaluation; pair it with a timing study of motion feedback.',
        '[{"step":1,"title":"Define states","instruction":"List loading, success, warning, error, and disabled states for a simple form or upload flow."},{"step":2,"title":"Prototype feedback","instruction":"Create a no-motion baseline and a motion version using easing, follow-through, secondary action, and clear staging."},{"step":3,"title":"Measure response","instruction":"Measure from action to visible acknowledgement and to task completion. Record animation duration separately from system response."},{"step":4,"title":"Test robustness","instruction":"Try empty, malformed, repeated, and unexpected inputs. Provide understandable validation and recovery rather than silently accepting invalid data."},{"step":5,"title":"Run a usability review","instruction":"Ask participants to complete the same task in both variants. Record task time, errors, clarity ratings, and distracting-motion feedback."},{"step":6,"title":"Refine","instruction":"Remove animation that blocks action; make important feedback noticeable, brief, and accessible with a reduced-motion alternative."}]',
        '[{"key":"variant","header":"Prototype variant"},{"key":"ack_time","header":"Time to acknowledgement","unit":"ms"},{"key":"task_time","header":"Task completion time","unit":"seconds"},{"key":"errors","header":"Errors","unit":"count"},{"key":"clarity","header":"Feedback clarity","unit":"/5"}]',
        '[{"variant":"Baseline","ack_time":"180","task_time":"14.2","errors":"2","clarity":"3"},{"variant":"Motion","ack_time":"120","task_time":"12.8","errors":"1","clarity":"4"}]',
        'A prototype and short evaluation report compare feedback clarity, task completion, errors, and perceived responsiveness. The learner includes a reduced-motion option and explains trade-offs.'),
-      ('UXA-401L', 'Integrated UX & Motion Design Capstone (Demo)', 8, 'Year 4: Integrated UX and Motion Capstone',
+      ('UXA-401L', 'Integrated UX & Motion Design Capstone (Demo)', 8, 'Year 4: Integrated UX and Motion Capstone', 'Build and evaluate an integrated UX and motion prototype',
        'Design, prototype, and evaluate an end-to-end interface flow that combines motion design, accessibility, predictable navigation, robust input handling, and measured usability.',
        'This capstone integrates all 20 supplied principles. Animation principles guide staging, poses, arcs, timing, form, follow-through, and appeal. UX principles guide target size, choice complexity, cognitive load, responsive feedback, tolerant input, familiar conventions, and frequency-based prioritisation. The principles are applied as design prompts and validated through user tasks.',
        'UX design prototype usability testing motion design capstone',
-       'https://hci-iitg.vlabs.ac.in/Consistency.html',
+       'https://new.vlab.co.in/computer-science-and-engineering/creative-design-prototyping-experiential-lab-111',
        'HCI consistency reference for evaluating familiar and predictable interface patterns.',
        '[{"step":1,"title":"Choose a user task","instruction":"Select a realistic flow such as locating an experiment, opening its manual, and launching a simulation."},{"step":2,"title":"Map the journey","instruction":"Sketch task stages and identify the primary action, decision points, repeated controls, and likely input errors."},{"step":3,"title":"Build the visual system","instruction":"Create a coherent 2D/3D visual language with clear focus, appealing composition, stable forms, and consistent controls."},{"step":4,"title":"Add motion","instruction":"Use anticipation, pose-to-pose, squash and stretch where appropriate, arcs, easing, follow-through, secondary actions, and clear state feedback."},{"step":5,"title":"Apply interaction rules","instruction":"Use large hit areas, reduce unnecessary choices, group related options, preserve familiar patterns, accept recoverable input variations, and prioritise frequent actions."},{"step":6,"title":"Evaluate","instruction":"Run at least five task-based trials where practical. Record completion time, errors, misclicks, task success, and participant comments without collecting identifying data."},{"step":7,"title":"Iterate and present","instruction":"Compare the first and revised prototype, explain changes using the 20 principles, and provide a reduced-motion and keyboard-accessible path."}]',
        '[{"key":"success","header":"Task success rate","unit":"%"},{"key":"time","header":"Median task time","unit":"seconds"},{"key":"errors","header":"User errors","unit":"count"},{"key":"misclicks","header":"Misclicks","unit":"count"},{"key":"accessibility","header":"Accessibility checks passed","unit":"count"}]',
        '[{"success":"90","time":"38","errors":"1","misclicks":"2","accessibility":"8"}]',
        'A functioning interactive prototype, test summary, revised design, and rationale mapping all 20 principles to concrete interface and motion decisions are presented.')
-    ) AS x(code, subject_name, semester, year_topic, subject_description, experiment_theory, video_query, simulation_url, resource_note, procedure_json, observation_json, sample_json, expected_result)
+    ) AS x(code, subject_name, semester, year_topic, experiment_title, subject_description, experiment_theory, video_query, simulation_url, resource_note, procedure_json, observation_json, sample_json, expected_result)
   LOOP
     INSERT INTO public.practical_subjects (
       institution_id, lab_id, department_id, term_id, code, name, credits,
@@ -146,7 +146,7 @@ BEGIN
       is_published
     )
     VALUES (
-      v_institution_id, v_subject_id, 1, v_row.year_topic,
+      v_institution_id, v_subject_id, 1, v_row.experiment_title,
       lower(replace(v_row.code, '-', '-')) || '-experiment-1',
       v_row.subject_description,
       v_row.experiment_theory,
