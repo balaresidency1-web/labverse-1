@@ -104,6 +104,11 @@ export const ExperimentDetailView: React.FC<ExperimentDetailViewProps> = ({
     : experiment.manual_pdf_url
       ? Boolean(experiment.is_demo) && experiment.manual_pdf_url.startsWith('data:')
       : !isSupabaseActive;
+  const isExternalManual = Boolean(
+    !linkedDoc &&
+    /^https?:\\/\\//i.test(experiment.manual_pdf_url || '') &&
+    !/\\/storage\\/v1\\/object\\//i.test(experiment.manual_pdf_url || '')
+  );
 
   const yearDisplay =
     breadcrumbContext?.yearLabel ||
@@ -443,7 +448,7 @@ export const ExperimentDetailView: React.FC<ExperimentDetailViewProps> = ({
                 </table>
               </div>
               <p className="text-[11px] text-[#5C534A]">
-                Sample reference readings shown above illustrate standard MVIT practical observation formatting.
+                Sample reference readings shown above illustrate a practical observation format.
               </p>
             </div>
           </div>
@@ -468,16 +473,25 @@ export const ExperimentDetailView: React.FC<ExperimentDetailViewProps> = ({
                       className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
                         isDemoManual
                           ? 'bg-[#FFFBEB] border-[#FDE68A] text-[#B45309]'
-                          : 'bg-[#EBF5EE] border-[#C6E3D0] text-[#2E6F4E]'
+                          : isExternalManual
+                            ? 'bg-[#F5F0E8] border-[#D8CBB9] text-[#49372E]'
+                            : 'bg-[#EBF5EE] border-[#C6E3D0] text-[#2E6F4E]'
                       }`}
                     >
                       {isDemoManual
                         ? 'DEMO – ILLUSTRATIVE CONTENT – NOT AN OFFICIAL COLLEGE DOCUMENT'
-                        : 'UPLOADED DOCUMENT'}
+                        : isExternalManual
+                          ? 'EXTERNAL REFERENCE PDF'
+                          : 'UPLOADED DOCUMENT'}
                     </span>
                   )}
                 </div>
                 <p className="text-xs text-[#5C534A] font-mono">{pdfFileName}</p>
+                {isExternalManual && (
+                  <p className="text-[11px] text-[#6E675F] mt-1 max-w-xl">
+                    Reference PDF hosted by the source institution. It is provided as an external learning reference and may not match a local syllabus exactly.
+                  </p>
+                )}
               </div>
             </div>
 
