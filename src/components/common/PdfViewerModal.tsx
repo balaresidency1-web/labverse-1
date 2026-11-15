@@ -160,6 +160,11 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
     (resolved?.status === 'ready' ? resolved.objectUrl : null) ||
     resolved?.externalUrl ||
     (/^https?:\/\//i.test(pdfUrl) ? pdfUrl : null);
+  const isExternalSource = Boolean(
+    !storagePath &&
+    /^https?:\/\//i.test(pdfUrl) &&
+    !/\/storage\/v1\/object\//i.test(pdfUrl)
+  );
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-[#252521]/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5">
@@ -289,7 +294,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
           ) : (
             <div className="flex items-center gap-1 text-[#2E6F4E] font-semibold">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Uploaded MVIT Laboratory Document</span>
+              <span>{isExternalSource ? 'External reference PDF • hosted by source institution' : 'Uploaded LABVERSE laboratory document'}</span>
             </div>
           )}
         </div>
