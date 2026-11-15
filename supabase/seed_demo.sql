@@ -260,6 +260,86 @@ BEGIN
     (v_inst_id, v_subj_ece402, 2, 'IoT Edge Device MQTT Telemetry & Cloud Integration Study', 'iot-mqtt-telemetry-study', 'To publish structured JSON sensor payloads over MQTT/HTTP from an embedded node.', 'DEMO CONTENT: Lightweight pub/sub brokers decouple constrained IoT nodes from dashboard consumers.', 'End-to-end telemetry round-trip verified cleanly.', 'https://www.youtube.com/results?search_query=IoT+MQTT+ESP32+telemetry+engineering+lab', 'https://benchtwin.com/', 'https://benchtwin.com/', 'external', 'custom', 'external', 'benchtwin', true)
   ON CONFLICT (subject_id, exp_number) DO NOTHING;
 
+  -- 7b. Attach publisher-hosted reference PDFs to one published experiment per year.
+  -- These are external source links, not copies. Preserve any manual previously uploaded by staff.
+  UPDATE public.experiments
+  SET manual_pdf_url = 'https://scce.ac.in/noticeboard/10969_21122017SIMPLE_PENDULUM.pdf',
+      manual_pdf_name = 'SCCE_Simple_Pendulum_Lab_Manual.pdf',
+      manual_doc_name = 'Simple Pendulum – Acceleration due to Gravity – SCCE reference',
+      last_verified_at = now(),
+      updated_at = now()
+  WHERE subject_id = v_subj_phy101 AND exp_number = 1
+    AND (manual_pdf_url IS NULL OR manual_pdf_url LIKE 'data:%');
+
+  UPDATE public.experiments
+  SET manual_pdf_url = 'https://mits.ac.in/assets/pdf/ece/EED%20Lab%20Manual.pdf',
+      manual_pdf_name = 'MITS_Electronic_Devices_and_Circuits_Lab_Manual.pdf',
+      manual_doc_name = 'PN Junction Diode – MITS reference manual',
+      last_verified_at = now(),
+      updated_at = now()
+  WHERE subject_id = v_subj_ece201 AND exp_number = 1
+    AND (manual_pdf_url IS NULL OR manual_pdf_url LIKE 'data:%');
+
+  UPDATE public.experiments
+  SET manual_pdf_url = 'https://iitr.ac.in/Academics/static/Department/Physics/Analog%20Electronics/BJT_Characteristics.pdf',
+      manual_pdf_name = 'IIT_Roorkee_BJT_Common_Emitter_Characteristics.pdf',
+      manual_doc_name = 'BJT Common Emitter Characteristics – IIT Roorkee reference',
+      last_verified_at = now(),
+      updated_at = now()
+  WHERE subject_id = v_subj_ece301 AND exp_number = 1
+    AND (manual_pdf_url IS NULL OR manual_pdf_url LIKE 'data:%');
+
+  UPDATE public.experiments
+  SET manual_pdf_url = 'https://iitr.ac.in/Academics/static/Department/Physics/Microcontroller%20Lab/ADC.pdf',
+      manual_pdf_name = 'IIT_Roorkee_Microcontroller_ADC_Interfacing_Manual.pdf',
+      manual_doc_name = 'ADC Sensor Interfacing – IIT Roorkee reference manual',
+      last_verified_at = now(),
+      updated_at = now()
+  WHERE subject_id = v_subj_ece401 AND exp_number = 2
+    AND (manual_pdf_url IS NULL OR manual_pdf_url LIKE 'data:%');
+
+  INSERT INTO public.experiment_resources
+    (institution_id, experiment_id, resource_type, title, url, metadata, is_published)
+  SELECT
+    v_inst_id,
+    e.id,
+    'manual_pdf',
+    ref.title || ' – External reference PDF',
+    ref.pdf_url,
+    jsonb_build_object(
+      'source_institution', ref.source_name,
+      'publisher_page', ref.source_page,
+      'provenance', 'external_public_reference',
+      'hosting', 'Hosted by the original educational publisher. LABVERSE links to the source and does not claim authorship or redistribute the file.'
+    ),
+    true
+  FROM (
+    VALUES
+      (v_subj_phy101, 1, 'Simple Pendulum – Acceleration due to Gravity',
+       'https://scce.ac.in/noticeboard/10969_21122017SIMPLE_PENDULUM.pdf',
+       'SCCE – Kinematics and Dynamics Lab Manual', 'https://scce.ac.in/'),
+      (v_subj_ece201, 1, 'PN Junction Diode – Forward Bias Characteristics',
+       'https://mits.ac.in/assets/pdf/ece/EED%20Lab%20Manual.pdf',
+       'MITS – Electronic Devices and Circuits Lab Manual', 'https://mits.ac.in/'),
+      (v_subj_ece301, 1, 'BJT Common Emitter Characteristics',
+       'https://iitr.ac.in/Academics/static/Department/Physics/Analog%20Electronics/BJT_Characteristics.pdf',
+       'IIT Roorkee – Analog Electronics Teaching Laboratory',
+       'https://iitr.ac.in/Departments/Physics%20Department/Academics/Teaching%20Laboratories.html'),
+      (v_subj_ece401, 2, 'ADC Sensor Interfacing & Serial Telemetry Acquisition',
+       'https://iitr.ac.in/Academics/static/Department/Physics/Microcontroller%20Lab/ADC.pdf',
+       'IIT Roorkee – Microcontroller Laboratory',
+       'https://iitr.ac.in/Departments/Physics%20Department/Academics/Teaching%20Laboratories.html')
+  ) AS ref(subject_id, exp_number, title, pdf_url, source_name, source_page)
+  JOIN public.experiments e
+    ON e.subject_id = ref.subject_id AND e.exp_number = ref.exp_number
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM public.experiment_resources er
+    WHERE er.experiment_id = e.id
+      AND er.resource_type = 'manual_pdf'
+      AND er.url = ref.pdf_url
+  );
+
   -- 8. Map ECE + Related Courses to seeded experiments cleanly (preserving any existing mappings)
   INSERT INTO public.experiment_courses (institution_id, experiment_id, course_id)
   SELECT v_inst_id, e.id, c.id
