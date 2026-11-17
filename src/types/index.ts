@@ -229,7 +229,7 @@ export type BuiltInSimulatorId = 'pn_junction' | 'pendulum' | 'calipers' | 'ph_m
 
 export interface ResourceLinkCheckResult {
   url: string;
-  reachable: boolean;
+  reachable: boolean | null;
   status: number | null;
   embeddable: boolean;
   provider: string;
