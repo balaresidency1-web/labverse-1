@@ -99,6 +99,7 @@ function isPublicIpv6(address: string): boolean {
   // transition, and documentation ranges before allowing server-side requests.
   if ((value >> 125n) !== 1n) return false;
   if (hasIpv6Prefix(value, 0x20010000000000000000000000000000n, 23n)) return false; // 2001::/23 special-purpose
+  if (hasIpv6Prefix(value, 0x20010db8000000000000000000000000n, 32n)) return false; // 2001:db8::/32 documentation
   if (hasIpv6Prefix(value, 0x20020000000000000000000000000000n, 16n)) return false; // 6to4
   if (hasIpv6Prefix(value, 0x3fff0000000000000000000000000000n, 20n)) return false; // 3fff::/20 documentation
 
