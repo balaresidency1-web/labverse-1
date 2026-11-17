@@ -4,6 +4,9 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { processAdminInviteRequest } from './src/utils/adminInviteHandler.ts';
+import { lookup as dnsLookup } from 'node:dns/promises';
+import https from 'node:https';
+import { isPublicIpAddress, validateExternalHttpsUrl } from './src/utils/safeExternalUrl.ts';
 
 dotenv.config();
 
@@ -39,6 +42,121 @@ const getSupabaseAnon = (): SupabaseClient | null => {
   });
 };
 
+async function requireActiveCollegeAdmin(
+  req: express.Request,
+  res: express.Response
+): Promise<boolean> {
+  const adminClient = getSupabaseAdmin();
+  if (!adminClient) {
+    res.status(503).json({ error: 'Admin-only endpoint is unavailable until the server-side Supabase secret is configured.' });
+    return false;
+  }
+
+  const authHeader = req.headers.authorization || '';
+  if (!authHeader.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'A valid staff sign-in is required.' });
+    return false;
+  }
+
+  const token = authHeader.slice('Bearer '.length).trim();
+  const { data: userData, error: authError } = await adminClient.auth.getUser(token);
+  if (authError || !userData?.user) {
+    res.status(401).json({ error: 'The staff session is invalid or expired.' });
+    return false;
+  }
+
+  const { data: profile, error: profileError } = await adminClient
+    .from('profiles')
+    .select('role,status,institution_id')
+    .eq('id', userData.user.id)
+    .maybeSingle();
+
+  if (profileError || !profile || profile.role !== 'college_admin' || profile.status !== 'active') {
+    res.status(403).json({ error: 'An active MVIT College Admin account is required.' });
+    return false;
+  }
+
+  const { data: institution, error: institutionError } = await adminClient
+    .from('institutions')
+    .select('code,active,status')
+    .eq('id', profile.institution_id)
+    .maybeSingle();
+
+  if (
+    institutionError ||
+    !institution ||
+    String(institution.code || '').toUpperCase() !== 'MVIT' ||
+    institution.active !== true ||
+    (institution.status && institution.status !== 'active')
+  ) {
+    res.status(403).json({ error: 'The account is not attached to an active MVIT institution.' });
+    return false;
+  }
+
+  return true;
+}
+
+async function requestPinnedHttps(targetUrl: URL): Promise<{
+  statusCode: number;
+  headers: https.IncomingHttpHeaders;
+  body: string;
+}> {
+  const addresses = await dnsLookup(targetUrl.hostname, { all: true, verbatim: true });
+  if (!addresses.length || addresses.some((entry) => !isPublicIpAddress(entry.address))) {
+    throw new Error('The external host did not resolve exclusively to public IP addresses.');
+  }
+
+  // Pin the connection to a validated public address and never auto-follow redirects.
+  const selectedAddress = addresses[0];
+  const pinnedLookup = ((_hostname: string, options: any, callback: any) => {
+    if (options?.all) callback(null, [selectedAddress]);
+    else callback(null, selectedAddress.address, selectedAddress.family);
+  }) as any;
+  const agent = new https.Agent({ keepAlive: false, lookup: pinnedLookup });
+
+  try {
+    return await new Promise((resolve, reject) => {
+      const request = https.request(
+        targetUrl,
+        {
+          method: 'GET',
+          agent,
+          timeout: 5500,
+          headers: {
+            'User-Agent': 'LABVERSE-Resource-Validator/1.0',
+            Accept: 'text/html,application/xhtml+xml,application/json,*/*',
+            Range: 'bytes=0-65535',
+          },
+        },
+        (response) => {
+          const chunks: Buffer[] = [];
+          let receivedBytes = 0;
+          response.on('data', (chunk: Buffer) => {
+            receivedBytes += chunk.length;
+            if (receivedBytes > 64 * 1024) {
+              request.destroy(new Error('External resource response exceeded the 64 KB validation limit.'));
+              return;
+            }
+            chunks.push(chunk);
+          });
+          response.on('end', () => resolve({
+            statusCode: response.statusCode || 0,
+            headers: response.headers,
+            body: Buffer.concat(chunks).toString('utf8'),
+          }));
+          response.on('error', reject);
+        }
+      );
+
+      request.on('timeout', () => request.destroy(new Error('External resource validation timed out.')));
+      request.on('error', reject);
+      request.end();
+    });
+  } finally {
+    agent.destroy();
+  }
+}
+
 // API Health Check
 app.get('/api/health', (req, res) => {
   res.json({
@@ -46,14 +164,13 @@ app.get('/api/health', (req, res) => {
     service: 'LABVERSE SaaS Backend',
     timestamp: new Date().toISOString(),
     supabaseConfigured: Boolean(process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY),
-    supabaseServiceRoleConfigured: Boolean(
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY
-    ),
   });
 });
 
 // Real-time Supabase Architecture & Storage Status Check
 app.get('/api/admin/supabase-status', async (req, res) => {
+  if (!(await requireActiveCollegeAdmin(req, res))) return;
+
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
   const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
   const supabaseSecretKey =
@@ -89,6 +206,8 @@ app.get('/api/admin/supabase-status', async (req, res) => {
 
 // Provide Full Migration SQL for Admin 1-Click Copy into Supabase SQL Editor
 app.get('/api/admin/migration-sql', async (req, res) => {
+  if (!(await requireActiveCollegeAdmin(req, res))) return;
+
   try {
     const fs = await import('fs');
     const migrationsDir = path.join(process.cwd(), 'supabase', 'migrations');
@@ -119,30 +238,8 @@ app.get('/api/admin/migration-sql', async (req, res) => {
 });
 
 // ==============================================================================
-// SSRF-SAFE EXTERNAL RESOURCE LINK VALIDATOR (YouTube oEmbed + Simulation Headers)
+// SSRF-HARDENED EXTERNAL RESOURCE LINK VALIDATOR
 // ==============================================================================
-function isPrivateOrBlockedHostname(hostname: string): boolean {
-  const host = hostname.toLowerCase();
-  if (
-    host === 'localhost' ||
-    host === '0.0.0.0' ||
-    host === '::1' ||
-    host.endsWith('.local') ||
-    host.endsWith('.internal')
-  ) {
-    return true;
-  }
-  const ipv4Match = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-  if (ipv4Match) {
-    const [a, b] = [Number(ipv4Match[1]), Number(ipv4Match[2])];
-    if (a === 10 || a === 127 || a === 0) return true;
-    if (a === 169 && b === 254) return true;
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 192 && b === 168) return true;
-  }
-  return false;
-}
-
 app.post('/api/resources/validate-link', async (req, res) => {
   const rawUrl = typeof req.body?.url === 'string' ? req.body.url.trim() : '';
   const checkedAt = new Date().toISOString();
@@ -157,6 +254,10 @@ app.post('/api/resources/validate-link', async (req, res) => {
       note: 'URL is required for validation.',
       checkedAt,
     });
+  }
+
+  if (rawUrl.length > 2048) {
+    return res.status(400).json({ url: '', reachable: false, status: null, embeddable: false, provider: 'invalid', note: 'URL exceeds the 2048-character limit.', checkedAt });
   }
 
   let parsed: URL;
@@ -174,29 +275,19 @@ app.post('/api/resources/validate-link', async (req, res) => {
     });
   }
 
-  if (parsed.protocol !== 'https:') {
-    return res.status(400).json({
-      url: rawUrl,
-      reachable: false,
-      status: null,
-      embeddable: false,
-      provider: 'insecure',
-      note: 'Only HTTPS links are permitted for laboratory resources.',
-      checkedAt,
-    });
-  }
-
-  if (isPrivateOrBlockedHostname(parsed.hostname)) {
+  const safeUrl = validateExternalHttpsUrl(parsed.toString());
+  if (!safeUrl.ok || !safeUrl.url) {
     return res.status(400).json({
       url: rawUrl,
       reachable: false,
       status: null,
       embeddable: false,
       provider: 'blocked',
-      note: 'Private or local network hostnames are not permitted.',
+      note: safeUrl.reason || 'URL is not permitted for server-side validation.',
       checkedAt,
     });
   }
+  parsed = safeUrl.url;
 
   const host = parsed.hostname.toLowerCase();
   const isYtHost =
@@ -205,15 +296,12 @@ app.post('/api/resources/validate-link', async (req, res) => {
     host === 'm.youtube.com' ||
     host === 'youtu.be';
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5500);
 
   try {
     // 1. YouTube Search Page
     if (isYtHost && parsed.pathname === '/results') {
       const q = parsed.searchParams.get('search_query') || '';
-      clearTimeout(timeout);
-      return res.json({
+        return res.json({
         url: parsed.toString(),
         reachable: Boolean(q.trim()),
         status: 200,
@@ -229,18 +317,15 @@ app.post('/api/resources/validate-link', async (req, res) => {
 
     // 2. Direct YouTube Video -> Official oEmbed verification
     if (isYtHost) {
-      const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(parsed.toString())}&format=json`;
-      const ytRes = await fetch(oembedUrl, {
-        signal: controller.signal,
-        headers: { 'User-Agent': 'LABVERSE-MVIT-Verifier/1.0' },
-      });
-      clearTimeout(timeout);
-      if (ytRes.ok) {
-        const meta: any = await ytRes.json().catch(() => ({}));
+      const oembedUrl = new URL(`https://www.youtube.com/oembed?url=${encodeURIComponent(parsed.toString())}&format=json`);
+      const ytRes = await requestPinnedHttps(oembedUrl);
+      if (ytRes.statusCode === 200) {
+        let meta: any = {};
+        try { meta = JSON.parse(ytRes.body); } catch { meta = {}; }
         return res.json({
           url: parsed.toString(),
           reachable: true,
-          status: ytRes.status,
+          status: ytRes.statusCode,
           embeddable: true,
           provider: 'youtube',
           title: meta.title || 'Verified YouTube Video',
@@ -252,33 +337,27 @@ app.post('/api/resources/validate-link', async (req, res) => {
       return res.json({
         url: parsed.toString(),
         reachable: false,
-        status: ytRes.status,
+        status: ytRes.statusCode,
         embeddable: false,
         provider: 'youtube',
-        note: `YouTube oEmbed returned HTTP ${ytRes.status}. Video may be private, removed, or invalid.`,
+        note: `YouTube oEmbed returned HTTP ${ytRes.statusCode}. Video may be private, removed, or invalid.`,
         checkedAt,
       });
     }
 
     // 3. External Simulation / Documentation URL
-    const probeRes = await fetch(parsed.toString(), {
-      method: 'GET',
-      redirect: 'follow',
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; LABVERSE-MVIT-Verifier/1.0)',
-        Accept: 'text/html,application/xhtml+xml,*/*',
-      },
-    });
-    clearTimeout(timeout);
-
-    const xfo = (probeRes.headers.get('x-frame-options') || '').toUpperCase();
-    const csp = (probeRes.headers.get('content-security-policy') || '').toLowerCase();
+    const probeRes = await requestPinnedHttps(parsed);
+    const xfoHeader = probeRes.headers['x-frame-options'];
+    const cspHeader = probeRes.headers['content-security-policy'];
+    const xfo = (Array.isArray(xfoHeader) ? xfoHeader.join(',') : xfoHeader || '').toUpperCase();
+    const csp = (Array.isArray(cspHeader) ? cspHeader.join(',') : cspHeader || '').toLowerCase();
     const hasXfoBlock = xfo.includes('DENY') || xfo.includes('SAMEORIGIN');
     const hasCspFrameBlock =
       csp.includes('frame-ancestors') &&
       !csp.includes('frame-ancestors *');
-    const embeddable = probeRes.ok && !hasXfoBlock && !hasCspFrameBlock;
+    const isRedirect = probeRes.statusCode >= 300 && probeRes.statusCode < 400;
+    const isReachable = probeRes.statusCode >= 200 && probeRes.statusCode < 400;
+    const embeddable = probeRes.statusCode >= 200 && probeRes.statusCode < 300 && !hasXfoBlock && !hasCspFrameBlock;
 
     const provider = host.includes('vlabs.ac.in') || host.includes('vlab.co.in')
       ? 'virtual_labs'
@@ -290,7 +369,7 @@ app.post('/api/resources/validate-link', async (req, res) => {
       ? 'benchtwin'
       : 'custom';
 
-    if (provider === 'benchtwin' && probeRes.status === 403) {
+    if (provider === 'benchtwin' && probeRes.statusCode === 403) {
       return res.json({
         url: parsed.toString(),
         reachable: true,
@@ -302,27 +381,29 @@ app.post('/api/resources/validate-link', async (req, res) => {
       });
     }
 
-    if (!probeRes.ok) {
+    if (!isReachable) {
       return res.json({
         url: parsed.toString(),
         reachable: false,
-        status: probeRes.status,
+        status: probeRes.statusCode,
         embeddable: false,
         provider,
-        note: `Remote host returned HTTP ${probeRes.status}. Verify the URL in a browser tab.`,
+        note: `Remote host returned HTTP ${probeRes.statusCode}. Verify the URL in a browser tab.`,
         checkedAt,
       });
     }
 
     return res.json({
       url: parsed.toString(),
-      reachable: true,
+      reachable: isReachable,
       status: probeRes.status,
       embeddable,
       provider,
-      note: embeddable
-        ? `HTTP ${probeRes.status} OK — supports inline iframe preview and external tab launch.`
-        : `HTTP ${probeRes.status} OK — remote headers (${xfo || 'CSP frame-ancestors'}) require external new-tab launch.`,
+      note: isRedirect
+        ? 'The destination redirects. LABVERSE did not follow the redirect for security; open the resource in a new browser tab.'
+        : embeddable
+          ? `HTTP ${probeRes.statusCode} OK — supports inline iframe preview and external tab launch.`
+          : `HTTP ${probeRes.statusCode} — remote headers (${xfo || 'CSP frame-ancestors'}) require external new-tab launch.`,
       checkedAt,
     });
   } catch (err: any) {
