@@ -397,7 +397,7 @@ app.post('/api/resources/validate-link', async (req, res) => {
     return res.json({
       url: parsed.toString(),
       reachable: isReachable,
-      status: probeRes.status,
+      status: probeRes.statusCode,
       embeddable,
       provider,
       note: isRedirect
@@ -408,7 +408,6 @@ app.post('/api/resources/validate-link', async (req, res) => {
       checkedAt,
     });
   } catch (err: any) {
-    clearTimeout(timeout);
     return res.json({
       url: parsed.toString(),
       reachable: false,
