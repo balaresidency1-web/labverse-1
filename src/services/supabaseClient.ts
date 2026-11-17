@@ -129,8 +129,8 @@ export const downloadStorageBlob = async (
 
 /**
  * Uploads a laboratory document / PDF to Supabase Storage.
- * Since the 'manuals' bucket is private and protected by RLS, returns a fresh signed URL
- * along with the persistent storage path so callers always persist `storage_path`.
+ * Both 'manuals' and 'diagrams' buckets are private and protected by RLS.
+ * Returns a short-lived signed URL and the persistent storage path.
  */
 export const uploadFileToStorage = async (
   bucket: 'manuals' | 'diagrams',
@@ -164,19 +164,10 @@ export const uploadFileToStorage = async (
       return { url: null, error: error.message, isCloudStorage: false };
     }
 
-    if (bucket === 'manuals') {
-      const signedRes = await createSignedFileUrl(bucket, data.path, 3600);
-      return {
-        url: signedRes.url || data.path,
-        error: signedRes.url ? undefined : signedRes.error,
-        isCloudStorage: true,
-        path: data.path,
-      };
-    }
-
-    const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(data.path);
+    const signedRes = await createSignedFileUrl(bucket, data.path, 3600);
     return {
-      url: publicUrlData.publicUrl,
+      url: signedRes.url,
+      error: signedRes.url ? undefined : (signedRes.error || 'Unable to create a private signed URL.'),
       isCloudStorage: true,
       path: data.path,
     };
