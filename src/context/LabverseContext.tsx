@@ -54,6 +54,7 @@ import {
 } from '../utils/labRules';
 import { idbGet, idbSet, idbClear, deletePdfBlob } from '../utils/indexedDbStorage';
 import { extractIdbKey } from '../utils/pdfSource';
+import { isActiveStaffStatus } from '../utils/staffAuthRules';
 import {
   getSupabaseClient,
   isSupabaseConfigured,
@@ -453,7 +454,7 @@ export const LabverseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             const suspended = p.status === 'suspended';
             setIsAccountSuspended(suspended);
 
-            if (!suspended) {
+            if (isActiveStaffStatus(p.status)) {
               const rawLabsList = labsRes.data || [];
               const hasAssignedPcLab =
                 p.role === 'lab_assistant' &&
@@ -601,7 +602,7 @@ export const LabverseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Derived authentication & user profile
   const isAuthenticated = isSupabaseActive
-    ? Boolean(session?.user && authenticatedProfile && !isAccountSuspended && institution.active)
+    ? Boolean(session?.user && authenticatedProfile && isActiveStaffStatus(authenticatedProfile.status) && !isAccountSuspended && institution.active)
     : Boolean(state.demoAuthRole && state.demoAuthUserId);
 
   const currentUser: Profile | null = useMemo(() => {
