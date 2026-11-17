@@ -58,7 +58,8 @@ function isPublicIpv4(address: string): boolean {
     [[198, 18, 0, 0], 15],      // benchmarking
     [[198, 51, 100, 0], 24],    // documentation
     [[203, 0, 113, 0], 24],     // documentation
-    [[224, 0, 0, 0], 4],        // multicast and reserved
+    [[224, 0, 0, 0], 4],        // multicast
+    [[240, 0, 0, 0], 4],        // reserved and limited broadcast
   ];
 
   return !blockedRanges.some(([network, prefix]) => isInIpv4Range(octets, network, prefix));
@@ -86,21 +87,21 @@ function parseIpv6(address: string): bigint | null {
 }
 
 function hasIpv6Prefix(value: bigint, prefix: bigint, bits: bigint): boolean {
-  return (value >> (128n - bits)) === prefix;
+  const shift = 128n - bits;
+  return (value >> shift) === (prefix >> shift);
 }
 
 function isPublicIpv6(address: string): boolean {
   const value = parseIpv6(address);
   if (value === null) return false;
 
-  // Permit only global-unicast 2000::/3. Reject IPv4-mapped, transition,
-  // documentation, and special-purpose ranges even when syntactically valid.
+  // Permit only global-unicast 2000::/3. Reject IANA special-purpose,
+  // transition, and documentation ranges before allowing server-side requests.
   if ((value >> 125n) !== 1n) return false;
-  if ((value >> 32n) === 0xffffn) return false; // IPv4-mapped ::ffff:0:0/96
-  if (hasIpv6Prefix(value, 0x20010db8n, 32n)) return false; // 2001:db8::/32 docs
-  if (hasIpv6Prefix(value, 0x20010000n, 32n)) return false; // Teredo
-  if (hasIpv6Prefix(value, 0x2002n, 16n)) return false; // 6to4
-  if (hasIpv6Prefix(value, 0x3fffn, 16n)) return false; // documentation
+  if (hasIpv6Prefix(value, 0x20010000000000000000000000000000n, 23n)) return false; // 2001::/23 special-purpose
+  if (hasIpv6Prefix(value, 0x20010db8000000000000000000000000n, 32n)) return false; // 2001:db8::/32 documentation
+  if (hasIpv6Prefix(value, 0x20020000000000000000000000000000n, 16n)) return false; // 6to4
+  if (hasIpv6Prefix(value, 0x3fff0000000000000000000000000000n, 20n)) return false; // 3fff::/20 documentation
 
   return true;
 }

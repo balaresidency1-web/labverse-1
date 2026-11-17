@@ -8,6 +8,7 @@ import { lookup as dnsLookup } from 'node:dns/promises';
 import https from 'node:https';
 import type { IncomingHttpHeaders } from 'node:http';
 import { isPublicIpAddress, validateExternalHttpsUrl } from './src/utils/safeExternalUrl.ts';
+import { createFixedWindowRateLimiter } from './src/utils/fixedWindowRateLimiter.ts';
 
 dotenv.config();
 
@@ -96,6 +97,82 @@ async function requireActiveCollegeAdmin(
 
   return true;
 }
+
+async function requireActiveMvitStaff(
+  req: express.Request,
+  res: express.Response
+): Promise<string | null> {
+  const anonClient = getSupabaseAnon();
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+  const anonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
+
+  if (!anonClient || !supabaseUrl || !anonKey) {
+    res.status(503).json({ error: 'Staff resource validation is unavailable until Supabase Auth is configured.' });
+    return null;
+  }
+
+  const authHeader = req.headers.authorization || '';
+  const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
+  if (!bearerMatch) {
+    res.status(401).json({ error: 'Sign in with an active MVIT staff account to validate external resources.' });
+    return null;
+  }
+
+  const token = bearerMatch[1].trim();
+  const { data: userData, error: authError } = await anonClient.auth.getUser(token);
+  if (authError || !userData?.user) {
+    res.status(401).json({ error: 'The staff session is invalid or expired.' });
+    return null;
+  }
+
+  // Query the profile using the caller's JWT so RLS remains in force; never use
+  // the service-role client for this read-only authorization check.
+  const userClient = createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+
+  const { data: profile, error: profileError } = await userClient
+    .from('profiles')
+    .select('role,status,institution_id')
+    .eq('id', userData.user.id)
+    .maybeSingle();
+
+  if (
+    profileError ||
+    !profile ||
+    profile.status !== 'active' ||
+    !['college_admin', 'lab_assistant'].includes(profile.role)
+  ) {
+    res.status(403).json({ error: 'Only active MVIT College Admins and Lab Assistants may validate learning resources.' });
+    return null;
+  }
+
+  const { data: institution, error: institutionError } = await userClient
+    .from('institutions')
+    .select('code,active,status')
+    .eq('id', profile.institution_id)
+    .maybeSingle();
+
+  if (
+    institutionError ||
+    !institution ||
+    String(institution.code || '').toUpperCase() !== 'MVIT' ||
+    institution.active !== true ||
+    (institution.status && institution.status !== 'active')
+  ) {
+    res.status(403).json({ error: 'The staff account is not attached to the active MVIT institution.' });
+    return null;
+  }
+
+  return userData.user.id;
+}
+
+const resourceValidationRateLimit = createFixedWindowRateLimiter({
+  limit: 30,
+  windowMs: 60_000,
+  maxKeys: 5_000,
+});
 
 async function requestPinnedHttps(targetUrl: URL): Promise<{
   statusCode: number;
@@ -242,6 +319,33 @@ app.get('/api/admin/migration-sql', async (req, res) => {
 // SSRF-HARDENED EXTERNAL RESOURCE LINK VALIDATOR
 // ==============================================================================
 app.post('/api/resources/validate-link', async (req, res) => {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+  const anonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
+  const liveSupabaseConfigured = Boolean(
+    supabaseUrl &&
+    anonKey &&
+    !supabaseUrl.includes('your-project-ref') &&
+    !anonKey.includes('your-anon-public-key')
+  );
+
+  let rateLimitKey = 'local-demo';
+  if (liveSupabaseConfigured) {
+    const staffUserId = await requireActiveMvitStaff(req, res);
+    if (!staffUserId) return;
+    rateLimitKey = staffUserId;
+  } else if (process.env.NODE_ENV === 'production' || process.env.VERCEL === '1') {
+    return res.status(503).json({
+      error: 'External resource validation is disabled until live Supabase Auth is configured.',
+    });
+  }
+
+  if (!resourceValidationRateLimit(rateLimitKey)) {
+    res.setHeader('Retry-After', '60');
+    return res.status(429).json({
+      error: 'Too many resource validation requests. Please wait one minute and try again.',
+    });
+  }
+
   const rawUrl = typeof req.body?.url === 'string' ? req.body.url.trim() : '';
   const checkedAt = new Date().toISOString();
 
