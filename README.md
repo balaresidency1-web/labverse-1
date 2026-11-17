@@ -4,6 +4,22 @@
 
 LABVERSE is a single-institution laboratory learning and operations platform. It brings together an open-access practical-learning portal and role-scoped laboratory administration, with experiment resources, virtual simulators, equipment QR workflows, and private manual storage.
 
+## Hackathon — College-based problem and solution
+
+**Problem statement:** College laboratories often manage practical learning material, experiment guidance, apparatus records, and maintenance information across separate tools or documents. Students may struggle to find the right practical resources for their course and year, while laboratory staff need clear ownership and restricted access to operational records.
+
+**LABVERSE solution:** A single-college platform that joins a public practical-learning pathway with authenticated, role-scoped laboratory management. Students can browse laboratories, courses, subjects, syllabi, experiments, and available demonstrations or simulations without an account. Authorized staff can maintain laboratory content, manuals, equipment inventory, and QR records. PC Lab workstation details are reserved for the assigned Lab Assistant.
+
+| College user | Problem addressed | LABVERSE workflow |
+|---|---|---|
+| Students | Practical resources are difficult to locate | Public lab → course → year → subject → experiment → available resources |
+| Lab Assistants | Experiment resources and apparatus records are spread across workflows | Manage assigned labs, manuals, videos, simulators, apparatus inventory, and QR tags |
+| College Admin | Laboratory and staff allocation needs clear oversight | Manage labs, staff invitations, and lab assignments without exposing restricted PC records |
+
+**What judges can evaluate:** The public learning journey, built-in interactive simulators, lab/subject/experiment navigation, QR resource workflows, and the separation of College Admin and Lab Assistant permissions. The live staff portal requires authorized MVIT accounts; for a presentation without those accounts, run the project in its documented local Demo Mode using illustrative data.
+
+**Scope:** LABVERSE is designed for the MVIT single-institution use case. Example curriculum, inventory, and demonstration records are illustrative until the college verifies them. This project does not claim to replace official academic approvals or provide student grading/progress features.
+
 ## Platform roles and access
 
 | Surface / role | Authentication | Responsibilities |
