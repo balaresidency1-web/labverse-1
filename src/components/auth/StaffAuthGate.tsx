@@ -4,6 +4,7 @@ import { getSupabaseClient } from '../../services/supabaseClient';
 import { labverseRepository } from '../../services/labverseRepository';
 import { useLabverse } from '../../context/LabverseContext';
 import { resolveDemoSignInProfile } from '../../utils/labRules';
+import { isActiveStaffStatus } from '../../utils/staffAuthRules';
 import {
   Lock,
   ShieldCheck,
@@ -91,6 +92,13 @@ export const StaffAuthGate: React.FC<StaffAuthGateProps> = ({
           if (profileData.status === 'suspended') {
             await supabase.auth.signOut();
             throw new Error('Your account has been suspended by MVIT College Administration.');
+          }
+
+          if (!isActiveStaffStatus(profileData.status)) {
+            await supabase.auth.signOut();
+            throw new Error(
+              'Your MVIT staff invitation is pending activation. Use the invitation email link to set your password before signing in.'
+            );
           }
 
           if (profileData.role !== 'college_admin' && profileData.role !== 'lab_assistant') {
