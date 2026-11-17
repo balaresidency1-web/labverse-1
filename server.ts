@@ -112,7 +112,7 @@ async function requireActiveMvitStaff(
   }
 
   const authHeader = req.headers.authorization || '';
-  const bearerMatch = authHeader.match(/^Bearer\\s+(.+)$/i);
+  const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
   if (!bearerMatch) {
     res.status(401).json({ error: 'Sign in with an active MVIT staff account to validate external resources.' });
     return null;
