@@ -6,6 +6,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { processAdminInviteRequest } from './src/utils/adminInviteHandler.ts';
 import { lookup as dnsLookup } from 'node:dns/promises';
 import https from 'node:https';
+import type { IncomingHttpHeaders } from 'node:http';
 import { isPublicIpAddress, validateExternalHttpsUrl } from './src/utils/safeExternalUrl.ts';
 
 dotenv.config();
@@ -98,7 +99,7 @@ async function requireActiveCollegeAdmin(
 
 async function requestPinnedHttps(targetUrl: URL): Promise<{
   statusCode: number;
-  headers: https.IncomingHttpHeaders;
+  headers: IncomingHttpHeaders;
   body: string;
 }> {
   const addresses = await dnsLookup(targetUrl.hostname, { all: true, verbatim: true });
