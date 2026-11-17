@@ -43,6 +43,16 @@ interface ExperimentEditorModalProps {
   preSelectedSubjectId?: string;
 }
 
+const linkValidationStatusClass = (reachable: boolean | null) =>
+  reachable === true
+    ? 'bg-[#EBF5EE] border-[#C6E3D0] text-[#2E6F4E]'
+    : reachable === false
+      ? 'bg-rose-50 border-rose-200 text-rose-800'
+      : 'bg-amber-50 border-amber-200 text-amber-900';
+
+const linkValidationStatusLabel = (reachable: boolean | null) =>
+  reachable === true ? 'REACHABLE' : reachable === false ? 'UNREACHABLE' : 'NOT PROBED';
+
 export const ExperimentEditorModal: React.FC<ExperimentEditorModalProps> = ({
   isOpen,
   onClose,
@@ -435,6 +445,11 @@ export const ExperimentEditorModal: React.FC<ExperimentEditorModalProps> = ({
     e.preventDefault();
     const subj = availableSubjects.find((s) => s.id === subjectId) || subjects[0];
 
+    const hasUnverifiedExternalResource =
+      (Boolean(youtubeUrl.trim() || youtubeSearchUrl.trim() || youtubeAltUrl.trim()) &&
+        ytCheckResult?.reachable !== true) ||
+      (Boolean(benchTwinUrl.trim()) && simCheckResult?.reachable !== true);
+
     const expData = {
       institution_id: institution.id,
       lab_id: subj?.lab_id || selectedLabId || undefined,
@@ -475,10 +490,9 @@ export const ExperimentEditorModal: React.FC<ExperimentEditorModalProps> = ({
       built_in_simulator_id: builtInSimulatorId,
       simulator_type: builtInSimulatorId || simulatorType,
       simulation_note: simulationNote.trim() || undefined,
-      resource_status:
-        ytCheckResult?.reachable === false || simCheckResult?.reachable === false
-          ? ('needs_review' as const)
-          : ('verified' as const),
+      resource_status: hasUnverifiedExternalResource
+        ? ('needs_review' as const)
+        : ('verified' as const),
       last_verified_at: (ytCheckResult || simCheckResult)?.checkedAt || initialExperiment?.last_verified_at,
       course_ids: selectedCourseIds,
       is_published: isPublished,
@@ -1195,13 +1209,9 @@ export const ExperimentEditorModal: React.FC<ExperimentEditorModalProps> = ({
 
                   {ytCheckResult && (
                     <div
-                      className={`p-2.5 rounded-lg border text-[11px] font-mono ${
-                        ytCheckResult.reachable
-                          ? 'bg-[#EBF5EE] border-[#C6E3D0] text-[#2E6F4E]'
-                          : 'bg-rose-50 border-rose-200 text-rose-800'
-                      }`}
+                      className={`p-2.5 rounded-lg border text-[11px] font-mono ${linkValidationStatusClass(ytCheckResult.reachable)}`}
                     >
-                      {ytCheckResult.reachable ? 'REACHABLE' : 'UNREACHABLE'}
+                      {linkValidationStatusLabel(ytCheckResult.reachable)}
                       {ytCheckResult.status ? ` (HTTP ${ytCheckResult.status})` : ''} — {ytCheckResult.note}
                     </div>
                   )}
@@ -1374,15 +1384,11 @@ export const ExperimentEditorModal: React.FC<ExperimentEditorModalProps> = ({
 
                   {simCheckResult && (
                     <div
-                      className={`p-2.5 rounded-lg border text-[11px] font-mono ${
-                        simCheckResult.reachable
-                          ? 'bg-[#EBF5EE] border-[#C6E3D0] text-[#2E6F4E]'
-                          : 'bg-rose-50 border-rose-200 text-rose-800'
-                      }`}
+                      className={`p-2.5 rounded-lg border text-[11px] font-mono ${linkValidationStatusClass(simCheckResult.reachable)}`}
                     >
-                      {simCheckResult.reachable ? 'REACHABLE' : 'UNREACHABLE'}
+                      {linkValidationStatusLabel(simCheckResult.reachable)}
                       {simCheckResult.status ? ` (HTTP ${simCheckResult.status})` : ''} •{' '}
-                      {simCheckResult.embeddable ? 'Embeddable' : 'External New Tab Only'} — {simCheckResult.note}
+                      {simCheckResult.embeddable ? 'Allowlisted for embedding' : 'External New Tab Only'} — {simCheckResult.note}
                     </div>
                   )}
 
