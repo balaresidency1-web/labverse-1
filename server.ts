@@ -328,18 +328,44 @@ app.post('/api/resources/validate-link', async (req, res) => {
     !anonKey.includes('your-anon-public-key')
   );
 
-  let rateLimitKey = 'local-demo';
+  let staffUserId: string | null = null;
   if (liveSupabaseConfigured) {
-    const staffUserId = await requireActiveMvitStaff(req, res);
+    staffUserId = await requireActiveMvitStaff(req, res);
     if (!staffUserId) return;
-    rateLimitKey = staffUserId;
   } else if (process.env.NODE_ENV === 'production' || process.env.VERCEL === '1') {
     return res.status(503).json({
       error: 'External resource validation is disabled until live Supabase Auth is configured.',
     });
   }
 
-  if (!resourceValidationRateLimit(rateLimitKey)) {
+  if (liveSupabaseConfigured) {
+    // Use a single Postgres counter so Vercel/serverless instances share the
+    // same per-staff window instead of resetting limits on cold starts.
+    const adminClient = getSupabaseAdmin();
+    if (!adminClient) {
+      return res.status(503).json({
+        error: 'Shared resource validation rate limiting is unavailable until the server-side Supabase secret is configured.',
+      });
+    }
+
+    const { data: withinLimit, error: rateLimitError } = await adminClient.rpc(
+      'consume_resource_validation_rate_limit',
+      { p_subject: staffUserId }
+    );
+    if (rateLimitError || typeof withinLimit !== 'boolean') {
+      console.error('Shared resource validation rate limit failed:', rateLimitError?.message || 'Invalid RPC response');
+      return res.status(503).json({
+        error: 'Resource validation is temporarily unavailable. Please try again shortly.',
+      });
+    }
+
+    if (!withinLimit) {
+      res.setHeader('Retry-After', '60');
+      return res.status(429).json({
+        error: 'Too many resource validation requests. Please wait one minute and try again.',
+      });
+    }
+  } else if (!resourceValidationRateLimit('local-demo')) {
     res.setHeader('Retry-After', '60');
     return res.status(429).json({
       error: 'Too many resource validation requests. Please wait one minute and try again.',
