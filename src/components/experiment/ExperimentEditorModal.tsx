@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLabverse } from '../../context/LabverseContext';
+import { getSupabaseSession } from '../../services/supabaseClient';
 import {
   Experiment,
   ExperimentComponent,
@@ -298,9 +299,17 @@ export const ExperimentEditorModal: React.FC<ExperimentEditorModalProps> = ({
       setSimChecking(true);
     }
     try {
+      const session = await getSupabaseSession();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (session?.access_token) {
+        headers.Authorization = `Bearer ${session.access_token}`;
+      }
+
       const response = await fetch('/api/resources/validate-link', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ url: trimmed }),
       });
       const data: ResourceLinkCheckResult = await response.json();
