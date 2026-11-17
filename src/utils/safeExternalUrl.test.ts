@@ -31,11 +31,17 @@ test('rejects non-public IPv4 and IPv6 destinations', () => {
     '100.64.0.1',
     '198.18.0.1',
     '224.0.0.1',
+    '240.0.0.1',
+    '255.255.255.255',
     '::1',
     'fc00::1',
     'fe80::1',
     '::ffff:127.0.0.1',
+    '2001:2::1',
+    '2001:20::1',
     '2001:db8::1',
+    '2002:c000:0201::1',
+    '3fff::1',
   ]) {
     assert.equal(isPublicIpAddress(address), false, address);
   }
@@ -45,6 +51,7 @@ test('accepts representative public IPv4 and IPv6 addresses', () => {
   assert.equal(isPublicIpAddress('8.8.8.8'), true);
   assert.equal(isPublicIpAddress('1.1.1.1'), true);
   assert.equal(isPublicIpAddress('2606:4700:4700::1111'), true);
+  assert.equal(isPublicIpAddress('2001:4860:4860::8888'), true);
 });
 
 test('validates HTTPS, credentials, ports and approved domains', () => {
