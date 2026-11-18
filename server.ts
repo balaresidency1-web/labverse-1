@@ -1,4 +1,5 @@
 import express from 'express';
+import { applyHttpSecurity, handleApiError } from './src/utils/httpSecurity.ts';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -18,7 +19,9 @@ const __dirname = path.dirname(__filename);
 export const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
-app.use(express.json());
+app.disable('x-powered-by');
+app.use(applyHttpSecurity);
+app.use(express.json({ limit: '32kb', strict: true }));
 
 // Server-side Supabase client helpers
 const getSupabaseAdmin = (): SupabaseClient | null => {
@@ -263,12 +266,12 @@ app.get('/api/admin/supabase-status', async (req, res) => {
     try {
       const { data, error } = await adminClient.storage.listBuckets();
       if (error) {
-        storageError = error.message;
+        storageError = 'Unable to retrieve storage status.';
       } else if (data) {
         storageBuckets = data.map((b) => b.name);
       }
     } catch (e: any) {
-      storageError = e.message;
+      storageError = 'Unable to retrieve storage status.';
     }
   }
 
@@ -311,7 +314,7 @@ app.get('/api/admin/migration-sql', async (req, res) => {
     }
     return res.status(404).send('-- Migration files not found');
   } catch (err: any) {
-    return res.status(500).send(`-- Error loading migrations: ${err.message}`);
+    return res.status(500).send('-- Unable to load migration files.');
   }
 });
 
@@ -546,7 +549,7 @@ app.post('/api/resources/validate-link', async (req, res) => {
       provider: 'external',
       note: err?.name === 'AbortError'
         ? 'Validation request timed out after 5.5s.'
-        : `Network probe failed: ${err?.message || 'Unknown error'}`,
+        : 'The external resource could not be validated.',
       checkedAt,
     });
   }
@@ -580,14 +583,19 @@ app.post('/api/admin/invite-user', async (req, res) => {
       },
     });
 
-    return res.status(result.statusCode).json(result.body);
+    if (result.statusCode === 429) res.setHeader('Retry-After', '60');
+    return res.status(result.statusCode).json(result.statusCode >= 500
+      ? { error: 'Staff invitations are temporarily unavailable. Contact your administrator.' }
+      : result.body);
   } catch (err: any) {
     console.error('Unhandled invitation dispatch error:', err);
     return res.status(500).json({
-      error: err.message || 'Internal server error processing invitation.',
+      error: 'Internal server error processing invitation.',
     });
   }
 });
+
+app.use(handleApiError);
 
 // Mount Vite middleware in development or serve built static files in production
 async function startServer() {
@@ -617,3 +625,4 @@ async function startServer() {
 if (process.env.VERCEL !== '1') {
   void startServer();
 }
+

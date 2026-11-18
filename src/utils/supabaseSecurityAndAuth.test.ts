@@ -395,6 +395,7 @@ test('processAdminInviteRequest enforces 503 missing-service-key, auth, caller r
     const updatedLabs: any[] = [];
 
     const client: any = {
+      rpc: async () => ({ data: true, error: null }),
       _upsertedProfiles: upsertedProfiles,
       _upsertedAssignments: upsertedAssignments,
       _updatedLabs: updatedLabs,
@@ -577,3 +578,4 @@ test('processAdminInviteRequest enforces 503 missing-service-key, auth, caller r
   assert.equal(successClient._upsertedAssignments[0].lab_id, CANONICAL_LAB_UUID);
   assert.equal(successClient._updatedLabs[0].payload.primary_assistant_id, ASSISTANT_UUID);
 });
+

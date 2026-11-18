@@ -426,7 +426,7 @@ export const LabAssistantView: React.FC<LabAssistantViewProps> = ({
   const handleUploadSyllabusPdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !syllabusSubject) return;
-    const check = validatePdfFile(file, 15);
+    const check = await validatePdfFile(file, 15);
     if (!check.isValid) {
       showBanner('error', check.error || 'Invalid PDF file.');
       return;
@@ -3123,3 +3123,4 @@ export const LabAssistantView: React.FC<LabAssistantViewProps> = ({
     </div>
   );
 };
+

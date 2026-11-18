@@ -31,6 +31,15 @@ export async function processAdminInviteRequest({
     assignedLabIds,
   } = body || {};
 
+  // Bound and type-check data before using it in Auth or database operations.
+  const bounded = (value: unknown, max: number) => typeof value === 'string' && value.trim().length > 0 && value.length <= max && !/[\u0000-\u001f\u007f]/.test(value);
+  if (!bounded(email, 254) || !bounded(name, 120) || !bounded(identifier, 64)
+    || (institutionId != null && !bounded(institutionId, 64))
+    || (departmentId != null && departmentId !== '' && !bounded(departmentId, 64))
+    || (assignedLabIds != null && (!Array.isArray(assignedLabIds) || assignedLabIds.length > 100 || assignedLabIds.some((id: unknown) => !bounded(id, 64))))) {
+    return { statusCode: 400, body: { error: 'Invalid invitation fields or field length.' } };
+  }
+
   // 1. Validate required fields
   if (!email || !name || !identifier) {
     return {
@@ -93,9 +102,7 @@ export async function processAdminInviteRequest({
       return {
         statusCode: 401,
         body: {
-          error: `Unauthorized: Invalid or expired Supabase authentication session. (${
-            authUserErr?.message || 'User not found'
-          })`,
+          error: 'Unauthorized: Invalid or expired Supabase authentication session.',
         },
       };
     }
@@ -223,6 +230,14 @@ export async function processAdminInviteRequest({
       validatedLabs = labRows;
     }
 
+    // Count only authenticated, authorized and validated invitations. Fail closed
+    // if the shared counter cannot be reached; never fall back to per-instance state.
+    const { data: allowed, error: limitError } = await adminClient.rpc('consume_staff_invitation_rate_limit', { p_subject: callerUserId });
+    if (limitError || typeof allowed !== 'boolean') {
+      return { statusCode: 503, body: { error: 'Staff invitations are temporarily unavailable.' } };
+    }
+    if (!allowed) return { statusCode: 429, body: { error: 'Too many invitations. Try again in one minute.' } };
+
     const appUrl = deps.appUrl || 'http://localhost:3000';
     const redirectUrl = `${appUrl}/update-password`;
 
@@ -243,7 +258,7 @@ export async function processAdminInviteRequest({
       return {
         statusCode: 400,
         body: {
-          error: inviteErr?.message || 'Failed to dispatch Supabase invitation email.',
+          error: 'Unable to send this invitation. Check the address or contact your administrator.',
         },
       };
     }
@@ -271,7 +286,7 @@ export async function processAdminInviteRequest({
       return {
         statusCode: 500,
         body: {
-          error: `User authentication invite dispatched, but failed to create MVIT profile: ${profileUpsertErr.message}`,
+          error: 'Invitation sent, but profile setup is incomplete. Contact your administrator.',
         },
       };
     }
@@ -291,7 +306,7 @@ export async function processAdminInviteRequest({
         return {
           statusCode: 500,
           body: {
-            error: `Profile created, but failed to assign laboratories: ${assignErr.message}`,
+            error: 'Profile created, but lab assignment is incomplete. Contact your administrator.',
           },
         };
       }
@@ -311,7 +326,7 @@ export async function processAdminInviteRequest({
           return {
             statusCode: 500,
             body: {
-              error: `Assignments saved, but failed to sync primary assistant on labs: ${labSyncErr.message}`,
+              error: 'Assignments saved, but primary assistant setup is incomplete. Contact your administrator.',
             },
           };
         }
@@ -349,3 +364,4 @@ export async function processAdminInviteRequest({
     },
   };
 }
+

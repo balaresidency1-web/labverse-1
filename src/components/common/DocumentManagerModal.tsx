@@ -104,7 +104,7 @@ export const DocumentManagerModal: React.FC<DocumentManagerModalProps> = ({
     ? documents.filter((d) => !d.lab_id || d.lab_id === selectedLabId)
     : documents;
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setFileError(null);
     if (!e.target.files || e.target.files.length === 0) {
       setSelectedFile(null);
@@ -112,7 +112,7 @@ export const DocumentManagerModal: React.FC<DocumentManagerModalProps> = ({
     }
 
     const file = e.target.files[0];
-    const validation = validatePdfFile(file, 15);
+    const validation = await validatePdfFile(file, 15);
     if (!validation.isValid) {
       setFileError(validation.error || 'Invalid file');
       setSelectedFile(null);
@@ -232,7 +232,7 @@ export const DocumentManagerModal: React.FC<DocumentManagerModalProps> = ({
   const handleReplaceDocument = async (doc: LabManualDocument) => {
     if (!replacementFile) return;
 
-    const validation = validatePdfFile(replacementFile, 15);
+    const validation = await validatePdfFile(replacementFile, 15);
     if (!validation.isValid) {
       setUploadStatus({
         type: 'error',
@@ -666,3 +666,4 @@ export const DocumentManagerModal: React.FC<DocumentManagerModalProps> = ({
     </div>
   );
 };
+

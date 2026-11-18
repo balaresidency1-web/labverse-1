@@ -1,3 +1,4 @@
+import { validateUploadBytes } from './uploadValidation';
 /**
  * Laboratory Manual PDF Generator and Viewer Utilities
  * Generates valid multi-page PDF 1.4 representations for offline inspection and downloading.
@@ -53,11 +54,11 @@ export interface ProfessionalPdfInput {
 /**
  * Validates file upload for PDF specifications
  */
-export const validatePdfFile = (
+export const validatePdfFile = async (
   file: File,
   maxSizeMb = 15
-): { isValid: boolean; error?: string } => {
-  if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+): Promise<{ isValid: boolean; error?: string }> => {
+  if (file.type !== 'application/pdf' || !file.name.toLowerCase().endsWith('.pdf')) {
     return {
       isValid: false,
       error: 'Invalid file format. Please upload a legitimate PDF file (.pdf).',
@@ -72,7 +73,8 @@ export const validatePdfFile = (
     };
   }
 
-  return { isValid: true };
+  const error = await validateUploadBytes('manuals', file);
+  return error ? { isValid: false, error } : { isValid: true };
 };
 
 /**
@@ -480,3 +482,4 @@ export const generateProfessionalPdfBlob = (
   const blobUrl = URL.createObjectURL(blob);
   return { blob, blobUrl, pageCount };
 };
+

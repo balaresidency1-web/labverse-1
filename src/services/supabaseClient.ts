@@ -1,3 +1,4 @@
+import { validateUploadBytes } from '../utils/uploadValidation';
 import { createClient, SupabaseClient, User, Session } from '@supabase/supabase-js';
 
 const supabaseUrl =
@@ -143,6 +144,8 @@ export const uploadFileToStorage = async (
   isCloudStorage: boolean;
   path?: string;
 }> => {
+  const validationError = await validateUploadBytes(bucket, file);
+  if (validationError) return { url: null, error: validationError, isCloudStorage: false };
   const supabase = getSupabaseClient();
   if (!supabase) {
     return {
@@ -202,3 +205,4 @@ export const deleteFileFromStorage = async (
     return { success: false, error: err.message };
   }
 };
+
