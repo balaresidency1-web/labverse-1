@@ -4,10 +4,13 @@
 
 LABVERSE is a single-institution laboratory learning and operations platform. It brings together an open-access practical-learning portal and role-scoped laboratory administration, with experiment resources, virtual simulators, equipment QR workflows, and private manual storage.
 
-## Deployment
+## Prototype Deployment for hackathon (live demo data & login)
 
 Deployed in the google cloud console with a subdomain 
 prototype link (https://labverse.ai.studio/)
+
+## PRODUCTION DEPLOYMENT 
+Deployed in the vercel (https://labverse-nu.vercel.app)
 
 ## Hackathon — College-based problem and solution
 
