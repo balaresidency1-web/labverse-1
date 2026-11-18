@@ -100,19 +100,17 @@ test('calculateStockStatus classifies in_stock, low_stock, and out_of_stock accu
 test('validatePdfFile enforces PDF MIME/extension and 15MB file size limit', async () => {
   const { validatePdfFile } = await import('./pdfGenerator');
 
-  const validFile = {
-    name: 'MVIT_PSL_Manual.pdf',
-    type: 'application/pdf',
-    size: 2 * 1024 * 1024,
-  } as File;
-  assert.equal(validatePdfFile(validFile).isValid, true);
+  const validFile = new File([`%PDF-1.4
+1 0 obj <<>> endobj
+%%EOF`], 'MVIT_PSL_Manual.pdf', { type: 'application/pdf' });
+  assert.equal((await validatePdfFile(validFile)).isValid, true);
 
   const oversizedFile = {
     name: 'Huge_Manual.pdf',
     type: 'application/pdf',
     size: 16 * 1024 * 1024,
   } as File;
-  const resOversized = validatePdfFile(oversizedFile);
+  const resOversized = await validatePdfFile(oversizedFile);
   assert.equal(resOversized.isValid, false);
   assert.match(resOversized.error || '', /15 MB|exceeds/i);
 
@@ -121,7 +119,7 @@ test('validatePdfFile enforces PDF MIME/extension and 15MB file size limit', asy
     type: 'image/png',
     size: 500 * 1024,
   } as File;
-  const resInvalid = validatePdfFile(invalidTypeFile);
+  const resInvalid = await validatePdfFile(invalidTypeFile);
   assert.equal(resInvalid.isValid, false);
   assert.match(resInvalid.error || '', /PDF file/i);
 });
@@ -292,4 +290,5 @@ test('PC Lab computer visibility & management are strictly restricted to assigne
   assert.equal(canViewPcLabComputers(pcAssistant, practicalLab), false);
   assert.equal(canViewPcLabComputers(pcAssistant, { ...pcLab, status: 'inactive' }), false);
 });
+
 

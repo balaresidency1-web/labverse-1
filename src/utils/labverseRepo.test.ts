@@ -79,18 +79,17 @@ test('Bench Twin embed verification requires verified allowlist', () => {
   assert.equal(unverified.isSafeUrl, true);
 });
 
-test('PDF validator enforces file limits and types', () => {
-  const validMock = {
-    name: 'MVIT_Lab_Guide.pdf',
-    type: 'application/pdf',
-    size: 4 * 1024 * 1024,
-  } as File;
-  assert.equal(validatePdfFile(validMock).isValid, true);
+test('PDF validator enforces file limits and types', async () => {
+  const validMock = new File([`%PDF-1.4
+1 0 obj <<>> endobj
+%%EOF`], 'MVIT_Lab_Guide.pdf', { type: 'application/pdf' });
+  assert.equal((await validatePdfFile(validMock)).isValid, true);
 
   const invalidMock = {
     name: 'document.docx',
     type: 'application/msword',
     size: 1024 * 1024,
   } as File;
-  assert.equal(validatePdfFile(invalidMock).isValid, false);
+  assert.equal((await validatePdfFile(invalidMock)).isValid, false);
 });
+
