@@ -4,6 +4,12 @@
 
 LABVERSE is a single-institution laboratory learning and operations platform. It brings together an open-access practical-learning portal and role-scoped laboratory administration, with experiment resources, virtual simulators, equipment QR workflows, and private manual storage.
 
+## Deployment roadmap
+
+**Google Cloud deployment planned.** Google Cloud is the intended future hosting target; deployment there has not yet been performed.
+
+[Open the current live prototype](https://labverse-nu.vercel.app)
+
 ## Hackathon — College-based problem and solution
 
 **Problem statement:** College laboratories often manage practical learning material, experiment guidance, apparatus records, and maintenance information across separate tools or documents. Students may struggle to find the right practical resources for their course and year, while laboratory staff need clear ownership and restricted access to operational records.
